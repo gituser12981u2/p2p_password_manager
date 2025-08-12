@@ -1,0 +1,9 @@
+from_latest_tag = false
+branch_whitelist = ["main"]
+
+[changelog]
+path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+repository = "gituser12981u2/p2p_password_manager"
+owner = "gituser12981u2"

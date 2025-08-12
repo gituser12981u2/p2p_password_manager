@@ -1,0 +1,21 @@
+{
+    "name": "Rust Dev Container",
+    "dockerComposeFile": [
+        "../docker-compose.yml"
+    ],
+    "service": "dev",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            },
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "tamasfe.even-better-toml",
+                "serayuzgur.crates"
+            ]
+        }
+    },
+    "postCreateCommand": "rustup default stable && rustup component add clippy rustfmt"
+}

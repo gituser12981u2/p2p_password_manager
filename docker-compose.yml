@@ -1,0 +1,23 @@
+services:
+  dev:
+    image: rust:latest
+    container_name: p2p_password_manager_dev
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace
+    command: sleep infinity
+    environment:
+      - CARGO_HOME=/workspace/.cargo
+      - RUSTUP_HOME=/workspace/.rustup
+    tty: true
+    stdin_open: true
+    # Uncomment the following lines to persist cargo/target cache between runs
+    # volumes:
+    #   - ./:/workspace
+    #   - cargo-cache:/workspace/.cargo
+    #   - rustup-cache:/workspace/.rustup
+    #   - target-cache:/workspace/target
+#volumes:
+#  cargo-cache:
+#  rustup-cache:
+#  target-cache:

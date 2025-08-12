@@ -1,0 +1,4 @@
+[package]
+name = "p2p_password_manager"
+version = "0.1.0"
+edition = "2024"

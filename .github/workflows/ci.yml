@@ -1,0 +1,58 @@
+name: Rust CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Lint (clippy)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Format check
+        run: cargo fmt --all -- --check
+      - name: Run tests
+        run: cargo test --all
+      - name: Check for security vulnerabilities
+        uses: actions-rust-lang/audit@v1
+      - name: Conventional commits check
+        if: github.event_name == 'pull_request'
+        uses: cocogitto/cocogitto-action@v3
+        with:
+          check-latest-tag-only: false
+
+  version-bump:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Bump version and release and tag 
+        uses: cocogitto/cocogitto-action@v3
+        with:
+          release: true
+          git-user : "github-actions[bot]"
+          git-user-email: "github-actions[bot]@users.noreply.github.com"
