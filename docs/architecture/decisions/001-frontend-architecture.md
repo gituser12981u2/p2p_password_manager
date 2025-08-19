@@ -6,7 +6,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -144,6 +144,41 @@ The purpose of this application:
 - Some Rust frameworks may be unknown such as Sycamore in regards to benefits, consequences, and use cases
 - Most of the team members haven't developed using some of the Rust frameworks, thus there may be some benefits and consequences overlooked
 - Discussion is required whether there is interest in learning something new such as Rust frameworks with the consequence of added dev/learning time vs using more familiar and stable JS frameworks as Rust frameworks undoubtedly will add towards dev time with trial and error
+
+## Decision
+
+### Frontend Framework: **Dioxus**
+
+#### Rationale
+
+1. **Cross-Functionality**: Dioxus uses Tauri under the hood this can work in all different platforms with one code base
+2. **General Interest of Use**: Team members showed the most enthusiasm using a new Rust framework
+3. **Performance**: As a Rust framework, it is generally performant in regards to being able to compile to WASM and the language advantages itself
+
+## Consequences
+
+### Positive
+
+- **Language Advantages**: Rust doesn't use a GC and has general type safety with ownership giving both performance and safety advantages
+- **Cross-Functionality**: Dioxus works in many different platforms and is simple to use in running in different platforms due to shared code base
+- **Documentation**: Unlike other newer Rust frameworks, the docs are continuously being updated and has a good amount to get started and for further development
+
+### Negatives
+
+- **Unstability**: Framework is continuously being developed thus newer versions will have breaking changes
+- **Learning Curve**: As not many team members use Rust frameworks, there is a learning curve in using Dioxus
+
+### Mitigation
+
+- **Refactoring**: Refactor when newer versions are released depending on our sprints
+- **Taking Time to Learn**: Although longer dev time, with the general enthusiasm, taking time to learn a new Rust framework is not an issue
+
+## Specifc Version
+
+```Cargo.toml
+[dependencies]
+dioxus = { version = "0.6.0" }
+```
 
 ## Follow-up Decisions Required
 
