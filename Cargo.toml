@@ -2,3 +2,14 @@
 name = "p2p_password_manager"
 version = "0.1.0"
 edition = "2024"
+
+[dependencies]
+ed25519-dalek = { version = "2.2.0", features = ["rand_core", "pkcs8"]}
+hex = "0.4.3"
+quinn = "0.11.8"
+rand = "0.8"
+rcgen = { version = "0.14.3", default-features = false, features = ["x509-parser", "ring"] }
+rustls = { version = "0.23.31", default-features = false, features = ["ring", "std"] }
+sha2 = "0.10.9"
+tokio = { version = "1.47.1", features = ["macros", "rt", "time"] }
+x509-parser = "0.17.0"
