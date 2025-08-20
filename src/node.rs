@@ -102,12 +102,11 @@ impl Node {
         signing_key: &SigningKey,
         verifying_key: &VerifyingKey,
     ) -> Result<(Endpoint, Vec<u8>), Box<dyn std::error::Error>> {
-        // Export ed25519_dalek keypair to PKCS#8 DER
+        // Export ed25519_dalek key pair to PKCS#8 DER
         let pkcs8_doc = signing_key.to_pkcs8_der()?; // SecretDocument (zeroizes on drop)
 
         // Build rcgen KeyPair from that PKCS#8
         let pkcs8_der = PrivatePkcs8KeyDer::from(pkcs8_doc.as_bytes().to_vec());
-        // TODO: Is using the and_sign_algo necessary here?
         let key_pair = KeyPair::from_pkcs8_der_and_sign_algo(&pkcs8_der, &rcgen::PKCS_ED25519)?;
 
         // Generate self-signed certificate for QUIC
