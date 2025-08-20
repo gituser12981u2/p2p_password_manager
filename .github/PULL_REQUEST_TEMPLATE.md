@@ -9,7 +9,7 @@ docs(adr): add ADR on NAT traversal
 -->
 
 ## Summary
-<!-- 1-3 sentences. What does this PR do and why? -->
+<!-- 1-3 sentences + screenshots if applicable. What does this PR do and why? -->
 
 ## Type of change
 
