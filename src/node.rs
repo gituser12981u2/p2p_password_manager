@@ -1,8 +1,10 @@
+use anyhow::{Context, Result, anyhow, bail};
+use ed25519_dalek::pkcs8::spki::der::zeroize::Zeroize;
 use ed25519_dalek::{
     Signature as Ed25519Signature, SigningKey, VerifyingKey, VerifyingKey as Ed25519VerifyingKey,
     pkcs8::EncodePrivateKey,
 };
-use quinn::crypto::rustls::QuicClientConfig;
+use quinn::crypto::rustls::{QuicClientConfig, QuicServerConfig};
 use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
 use rcgen::string::Ia5String;
 use rcgen::{Certificate as RcgenCert, CertificateParams, KeyPair, SanType};
@@ -10,10 +12,14 @@ use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, Server
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer, ServerName, UnixTime};
 use rustls::{Error as RustlsError, SignatureScheme};
 use sha2::{Digest, Sha256};
+use std::usize;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
+use x509_parser::oid_registry::OID_SIG_ED25519;
 use x509_parser::prelude::FromDer;
 use x509_parser::prelude::X509Certificate;
+
+const ALPN: &[u8] = b"p2p/1";
 
 /// Represents a peer node in the P2P network
 pub struct PeerInfo {
@@ -50,15 +56,16 @@ pub struct Node {
 impl Node {
     /// Creates a new node with a generated Ed25519 key pair
     // TODO: Discuss switching from ring to aws-lc-rs
-    pub async fn new(bind_addr: SocketAddr) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new(bind_addr: SocketAddr) -> Result<Self> {
         // Generate Ed25519 key pair
         let mut csprng = rand::rngs::OsRng;
         let signing_key = SigningKey::generate(&mut csprng);
         let verifying_key = signing_key.verifying_key();
 
         // Initialize QUIC endpoint
-        let (endpoint, cert_der) =
-            Self::create_endpoint(bind_addr, &signing_key, &verifying_key).await?;
+        let (endpoint, cert_der) = Self::create_endpoint(bind_addr, &signing_key, &verifying_key)
+            .await
+            .context("create_endpoint failed")?;
         let local_addr = endpoint.local_addr()?;
 
         Ok(Node {
@@ -71,22 +78,20 @@ impl Node {
         })
     }
 
-    pub async fn connect_to(
+    pub async fn connect_to_spki(
         &self,
         peer_addr: SocketAddr,
-        peer_cert_der: &[u8],
-    ) -> Result<quinn::Connection, Box<dyn std::error::Error>> {
-        // Compute the expected SPKI pin from the peer's certificate
-        let pin = spki_sha256_ed25519(peer_cert_der)
-            .map_err(|e| format!("Failed to compute SPKI pin: {}", e))?;
+        expected_spki_sha256: [u8; 32],
+    ) -> Result<quinn::Connection> {
         let verifier = Arc::new(SpkiPinVerifier {
-            expected_spki_sha256: pin,
+            expected_spki_sha256,
         });
 
-        let tls = rustls::ClientConfig::builder()
+        let mut tls = rustls::ClientConfig::builder()
             .dangerous()
             .with_custom_certificate_verifier(verifier)
             .with_no_client_auth();
+        tls.alpn_protocols = vec![ALPN.to_vec()];
 
         let crypto = QuicClientConfig::try_from(Arc::new(tls))?;
         let client_config = ClientConfig::new(Arc::new(crypto));
@@ -101,12 +106,14 @@ impl Node {
         bind_addr: SocketAddr,
         signing_key: &SigningKey,
         verifying_key: &VerifyingKey,
-    ) -> Result<(Endpoint, Vec<u8>), Box<dyn std::error::Error>> {
+    ) -> Result<(Endpoint, Vec<u8>)> {
         // Export ed25519_dalek key pair to PKCS#8 DER
         let pkcs8_doc = signing_key.to_pkcs8_der()?; // SecretDocument (zeroizes on drop)
+        let mut pkcs8_vec = pkcs8_doc.as_bytes().to_vec(); // Zeroize after use 
+        let pkcs8_der = PrivatePkcs8KeyDer::from(pkcs8_vec.clone());
+        pkcs8_vec.zeroize(); // Zeroize the PKCS#8 vec after use
 
         // Build rcgen KeyPair from that PKCS#8
-        let pkcs8_der = PrivatePkcs8KeyDer::from(pkcs8_doc.as_bytes().to_vec());
         let key_pair = KeyPair::from_pkcs8_der_and_sign_algo(&pkcs8_der, &rcgen::PKCS_ED25519)?;
 
         // Generate self-signed certificate for QUIC
@@ -130,26 +137,21 @@ impl Node {
         // Rustls private key (same as PKCS#8 DER)
         let key_der: PrivateKeyDer<'static> = pkcs8_der.into(); // convert to PrivateKeyDer
 
-        let mut server_config = ServerConfig::with_single_cert(vec![cert_der.clone()], key_der)?;
+        let mut tls_server = rustls::ServerConfig::builder()
+            .with_no_client_auth()
+            .with_single_cert(vec![cert_der.clone()], key_der)?;
+        tls_server.alpn_protocols = vec![ALPN.to_vec()];
 
+        let mut server_config =
+            ServerConfig::with_crypto(Arc::new(QuicServerConfig::try_from(Arc::new(tls_server))?));
+
+        // TODO: Make back and forward streams (i.e don't limit to 0 unidirectional)
         let mut transport_config = TransportConfig::default();
         transport_config.max_concurrent_uni_streams(0_u8.into());
         transport_config.max_concurrent_bidi_streams(100_u8.into());
         server_config.transport = Arc::new(transport_config);
 
-        // Pin cert
-        let roots = rustls::RootCertStore::empty();
-        let tls_default = rustls::ClientConfig::builder()
-            .with_root_certificates(roots)
-            .with_no_client_auth();
-
-        let crypto_default = QuicClientConfig::try_from(Arc::new(tls_default))?;
-        let client_config = ClientConfig::new(Arc::new(crypto_default));
-
-        // TODO: Add custom ALPN
-
-        let mut endpoint = Endpoint::server(server_config, bind_addr)?;
-        endpoint.set_default_client_config(client_config);
+        let endpoint = Endpoint::server(server_config, bind_addr)?;
 
         Ok((endpoint, cert_der.as_ref().to_vec()))
     }
@@ -185,14 +187,52 @@ impl Node {
     pub fn certificate_der(&self) -> &[u8] {
         &self.cert_der
     }
+
+    pub fn spki_pin(&self) -> [u8; 32] {
+        spki_sha256_ed25519(self.certificate_der()).expect("self cert is Ed25519")
+    }
+
+    /// Spawn an echo server that mirrors each BiDi stream
+    /// !!!Note: This is just for testing/demo purposes
+    pub fn spawn_echo_server(&self) {
+        let ep = self.endpoint().clone();
+        tokio::spawn(async move {
+            while let Some(connecting) = ep.accept().await {
+                tokio::spawn(async move {
+                    match connecting.await {
+                        Ok(conn) => loop {
+                            match conn.accept_bi().await {
+                                Ok((mut send, mut recv)) => {
+                                    tokio::spawn(async move {
+                                        while let Ok(Some(chunk)) =
+                                            recv.read_chunk(usize::MAX, true).await
+                                        {
+                                            let _ = send.write_all(&chunk.bytes).await;
+                                        }
+                                        let _ = send.finish();
+                                    });
+                                }
+                                Err(_) => break,
+                            }
+                        },
+                        Err(e) => eprintln!("accept error: {e}"),
+                    }
+                });
+            }
+        });
+    }
 }
 
 /// Extract SPKI bytes from a DER certificate and SHA-256 hash it
-fn spki_sha256_ed25519(
-    cert_der: &[u8],
-) -> Result<[u8; 32], Box<dyn std::error::Error + Send + Sync>> {
+fn spki_sha256_ed25519(cert_der: &[u8]) -> Result<[u8; 32]> {
     let (_, cert) = X509Certificate::from_der(cert_der)
-        .map_err(|e| format!("Failed to parse certificate: {}", e))?;
+        .map_err(|e| anyhow!("Failed to parse certificate: {}", e))?;
+
+    // Ensure the certificate uses Ed25519
+    let alg_oid = &cert.tbs_certificate.subject_pki.algorithm.algorithm;
+    if *alg_oid != OID_SIG_ED25519 {
+        bail!("Certificate is not Ed25519");
+    }
 
     let spki_der = cert.tbs_certificate.subject_pki.raw;
 

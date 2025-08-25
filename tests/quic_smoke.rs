@@ -6,40 +6,15 @@ use std::{
 use tokio::time::timeout;
 
 #[tokio::test(flavor = "current_thread")]
-async fn quic_roundtrip_smoke() -> Result<(), Box<dyn std::error::Error>> {
+async fn quic_roundtrip_smoke() -> anyhow::Result<()> {
     let a_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 0);
     let b_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 0);
 
     let a = Node::new(a_addr).await?;
     let b = Node::new(b_addr).await?;
+    b.spawn_echo_server();
 
-    // Start a minimal accept loop on node B (echo server)
-    let ep = b.endpoint().clone(); // Endpoint is Clone
-    let _echo = tokio::spawn(async move {
-        // Accept connections one by one
-        while let Some(connecting) = ep.accept().await {
-            tokio::spawn(async move {
-                match connecting.await {
-                    Ok(conn) => {
-                        // Handle BiDi streams
-                        while let Ok(Some((mut send, mut recv))) = conn.accept_bi().await.map(Some)
-                        {
-                            if let Ok(msg) = recv.read_to_end(64 * 1024).await {
-                                let _ = send.write_all(&msg).await;
-                                let _ = send.finish();
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        eprintln!("Connection error: {}", e);
-                    }
-                }
-            });
-        }
-    });
-
-    // A connects to B
-    let conn = a.connect_to(b.local_address(), b.certificate_der()).await?;
+    let conn = a.connect_to_spki(b.local_address(), b.spki_pin()).await?;
     let (mut send, mut recv) = conn.open_bi().await?;
     let payload = b"hello over quic";
     send.write_all(payload).await?;
