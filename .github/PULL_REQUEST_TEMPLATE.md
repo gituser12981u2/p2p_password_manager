@@ -35,6 +35,6 @@ docs(adr): add ADR on NAT traversal
 
 ## Release and Docs
 
-- **Breaking change?** - [ ] No - [ ] Yet -- describe impact and migration:
+- **Breaking change?** - [ ] No - [ ] Yes -- describe impact and migration:
 - **User-facing notes (1-2 lines for changelog):** ...
 - **Docs impact?** - [ ] None - [ ] README/CLI/help updated - [ ] Follow-up issue: #...
