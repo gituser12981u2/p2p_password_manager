@@ -20,7 +20,7 @@ labels: [feature, enhancement]
 
 <!-- List any alternative approaches or workarounds that have been considered. -->
 
-## Additional Context
+## Additional Context (Optional)
 
 <!-- Add any other context, screenshots, or references, such as links, that help explain the request. -->
 
