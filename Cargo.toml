@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1.0.99"
 ed25519-dalek = { version = "2.2.0", features = ["rand_core", "pkcs8"]}
 hex = "0.4.3"
 quinn = "0.11.8"
