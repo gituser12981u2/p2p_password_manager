@@ -1,5 +1,6 @@
 from_latest_tag = false
 branch_whitelist = ["main"]
+ignore_merge_commits = true
 
 [changelog]
 path = "CHANGELOG.md"
