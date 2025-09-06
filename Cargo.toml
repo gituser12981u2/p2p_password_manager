@@ -1,16 +1,29 @@
-[package]
-name = "p2p_password_manager"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+resolver = "2"
+members = [
+    "crates/backend",
+    "crates/frontend/src/ui",
+    "crates/frontend/src/web",
+    "crates/frontend/src/desktop",
+    "crates/frontend/src/mobile",
+    "crates/frontend/src/api",
+]
 
-[dependencies]
-anyhow = "1.0.99"
-ed25519-dalek = { version = "2.2.0", features = ["rand_core", "pkcs8"]}
-hex = "0.4.3"
-quinn = "0.11.8"
-rand = "0.8"
-rcgen = { version = "0.14.3", default-features = false, features = ["x509-parser", "ring"] }
-rustls = { version = "0.23.31", default-features = false, features = ["ring", "std"] }
-sha2 = "0.10.9"
-tokio = { version = "1.47.1", features = ["macros", "rt", "time"] }
-x509-parser = "0.17.0"
+
+[workspace.dependencies]
+dioxus = { version = "0.6.0" }
+
+ui = { path = "crates/frontend/src/ui" }
+api = { path = "crates/frontend/src/api" }
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"

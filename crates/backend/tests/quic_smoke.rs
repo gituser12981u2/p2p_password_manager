@@ -1,4 +1,4 @@
-use p2p_password_manager::node::Node;
+use backend::node::Node;
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     time::Duration,
