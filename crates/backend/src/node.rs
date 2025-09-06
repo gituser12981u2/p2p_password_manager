@@ -12,7 +12,6 @@ use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, Server
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer, ServerName, UnixTime};
 use rustls::{Error as RustlsError, SignatureScheme};
 use sha2::{Digest, Sha256};
-use std::usize;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use x509_parser::oid_registry::OID_SIG_ED25519;
@@ -200,21 +199,18 @@ impl Node {
             while let Some(connecting) = ep.accept().await {
                 tokio::spawn(async move {
                     match connecting.await {
-                        Ok(conn) => loop {
-                            match conn.accept_bi().await {
-                                Ok((mut send, mut recv)) => {
-                                    tokio::spawn(async move {
-                                        while let Ok(Some(chunk)) =
-                                            recv.read_chunk(usize::MAX, true).await
-                                        {
-                                            let _ = send.write_all(&chunk.bytes).await;
-                                        }
-                                        let _ = send.finish();
-                                    });
-                                }
-                                Err(_) => break,
+                        Ok(conn) => {
+                            while let Ok((mut send, mut recv)) = conn.accept_bi().await {
+                                tokio::spawn(async move {
+                                    while let Ok(Some(chunk)) =
+                                        recv.read_chunk(usize::MAX, true).await
+                                    {
+                                        let _ = send.write_all(&chunk.bytes).await;
+                                    }
+                                    let _ = send.finish();
+                                });
                             }
-                        },
+                        }
                         Err(e) => eprintln!("accept error: {e}"),
                     }
                 });
