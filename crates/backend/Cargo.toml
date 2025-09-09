@@ -14,6 +14,7 @@ quinn = "0.11.8"
 rand = "0.8"
 rcgen = { version = "0.14.3", default-features = false, features = ["x509-parser", "ring"] }
 rustls = { version = "0.23.31", default-features = false, features = ["ring", "std"] }
+serde = { version = "1.0.219", features = ["derive"] }
 sha2 = "0.10.9"
 tokio = { version = "1.47.1", features = ["macros", "rt", "time"] }
 x509-parser = "0.17.0"
