@@ -356,6 +356,7 @@ dependencies = [
  "rand 0.8.5",
  "rcgen",
  "rustls",
+ "serde",
  "sha2",
  "tokio",
  "x509-parser",
