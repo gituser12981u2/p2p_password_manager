@@ -29,12 +29,11 @@ flags (u8)
 
 */
 
+use crate::pinset::codec::{TlvDecode, TlvEncode};
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize}; // We do not need serde for TLV. We need to hand roll our encoding and decoding, unless you want to keep it for debugging purposes
 use std::io::{Read, Write};
 
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-
-use crate::pinset::codec::{TlvDecode, TlvEncode}; // We do not need serde for TLV. We need to hand roll our encoding and decoding, unless you want to keep it for debugging purposes
 pub const MAGIC: [u8; 4] = *b"PSET";
 
 pub type Result<T> = std::result::Result<T, PinsetError>;
@@ -152,7 +151,7 @@ impl PinsetHeader {
     }
 
     pub const fn validate(&self) -> Result<()> {
-        // Add some error handling here tomorrow
+        // TODO: Add some error handling here tomorrow
         if self.version == 0 {
             return Err(PinsetError::Invalid("Version must be >= 1"));
         }
@@ -274,7 +273,6 @@ impl PinsetRecord {
     }
 
     pub fn encode(&self) -> Result<Vec<u8>> {
-        // Ok(buffer)
         <Self as TlvEncode>::encode(self)
     }
 
