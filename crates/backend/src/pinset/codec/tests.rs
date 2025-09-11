@@ -7,13 +7,13 @@ use crate::pinset::types::{
 #[test]
 fn round_trip_streaming() {
     let version = 1;
-    let store_id = b"store-01";
+    let store_id = [0u8; 16];
     let nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
     let header = PinsetHeader::builder(
         version,
         AeadAlgorithm::AesGcm,
         KeySource::OsKeyStore,
-        store_id.to_vec(),
+        store_id,
         nonce,
     )
     .build()
@@ -29,13 +29,13 @@ fn round_trip_streaming() {
 #[test]
 fn round_trip_buffered() {
     let version = 1;
-    let store_id = b"store-01";
+    let store_id = [0u8; 16];
     let nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
     let header = PinsetHeader::builder(
         version,
         AeadAlgorithm::AesGcm,
         KeySource::OsKeyStore,
-        store_id.to_vec(),
+        store_id,
         nonce,
     )
     .build()
@@ -68,6 +68,7 @@ fn pinset_record_round_trip() {
     assert_eq!(decoded.peer_id, record.peer_id);
     assert_eq!(decoded.key_type, record.key_type);
     assert_eq!(decoded.key_data, record.key_data);
+    // assert_eq!(decoded.key_data, record.key_data);
     assert_eq!(decoded.added_at.timestamp(), record.added_at.timestamp());
     assert_eq!(
         decoded.expires_at.map(|dt| dt.timestamp()),
@@ -166,7 +167,7 @@ fn large_data_serialisation() {
     let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode large record");
 
     assert_eq!(decoded.peer_id, large_peer_id);
-    assert_eq!(decoded.key_data, large_key_data);
+    assert_eq!(&**decoded.key_data, large_key_data);
     assert_eq!(decoded.key_type, KeyType::Spki);
     assert!(matches!(decoded.flags, PinsetFlags::Active));
 }
@@ -184,7 +185,7 @@ fn empty_data_serialisation() {
     let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode empty record");
 
     assert_eq!(decoded.peer_id, vec![]);
-    assert_eq!(decoded.key_data, vec![]);
+    assert_eq!(&**decoded.key_data, &[]);
     assert_eq!(decoded.key_type, KeyType::Ed25519);
     assert!(matches!(decoded.flags, PinsetFlags::Active));
 }

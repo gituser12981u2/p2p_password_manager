@@ -20,3 +20,4 @@ sha2 = "0.10.9"
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["macros", "rt", "time"] }
 x509-parser = "0.17.0"
+zeroize = { version = "1.8.1", features = ["serde"] }
