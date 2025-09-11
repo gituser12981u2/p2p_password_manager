@@ -4,15 +4,15 @@ possible on disk format reference
 Header
 
 MAGIC (4 bytes): PSET
-version (u32 BE)
+version (u8)
 aead_alg (u8)
 key_source (u8)
 seq(u64 BE)
-store_id_len (u16 BE), store_id (bytes)
-nonce_len (u8), nonce (bytes)
-kdf_length, kdf
-kek_locator_length, kek_locator
-end (single terminator)
+store_id (16 bytes)
+nonce (12 bytes)           // nonce length is implied by aead_alg
+[ TLVs ]
+ TLV: type(u8), len(u16 BE), value([len])
+ types: 0x01=KDF, 0x02=KEK_LOCATOR, 0x03=WRAP, 0x7F=END
 
 Body (AEAD sealed blob)
 
@@ -20,19 +20,21 @@ record_count (u32 BE)
 
 For each record
 
-peer_id_len(u16) + peer_id
+peer_id_len(u16), peer_id ([len])
 key_type (u8)
-key_len (u16) + key_data
+key_len (u16), key_data ([len])
 added_at (u64 BE)
-has_expires (u8 0/1) + expires_at (u64 BE if present)
-flags (u8)
+has_expires (u8 0/1)
+[ expires_at (u64 BE if present) ] // iff has_expires == 1
+flags (u8)                         // bitmask
 
 */
 
 use crate::pinset::codec::{TlvDecode, TlvEncode};
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize}; // We do not need serde for TLV. We need to hand roll our encoding and decoding, unless you want to keep it for debugging purposes
+use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
+use zeroize::Zeroizing; // We do not need serde for TLV. We need to hand roll our encoding and decoding, unless you want to keep it for debugging purposes
 
 pub const MAGIC: [u8; 4] = *b"PSET";
 
@@ -63,6 +65,7 @@ pub enum PinsetError {
 }
 
 #[repr(u8)]
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum KeyType {
     //Change this as needed, we can easily add appropriate impl's on.
@@ -72,6 +75,7 @@ pub enum KeyType {
 }
 
 #[repr(u8)]
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum AeadAlgorithm {
     AesGcm = 1, //Add others as appropriate
@@ -86,6 +90,7 @@ impl AeadAlgorithm {
 }
 
 #[repr(u8)]
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum KeySource {
     OsKeyStore = 1, //As above
@@ -116,25 +121,25 @@ wrap (optional wrap FEK under a KEK)
 
 */
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)] // Remove serialize and deserialize for now since Zeroize does not like them
 pub struct PinsetHeader {
-    pub version: u32,
+    pub version: u8,
     pub aead_alg: AeadAlgorithm,
     pub key_source: KeySource,
     pub kdf: Option<String>,
     pub kek_locator: Option<String>, //This needs to be changed at some point, probably? I'm concerned about utf16 windows
-    pub store_id: Vec<u8>,           // This can probablyy
+    pub store_id: [u8; 16],
     pub seq: u64,
     pub nonce: Vec<u8>,
-    pub wrap: Option<Vec<u8>>,
+    pub wrap: Option<Zeroizing<Box<[u8]>>>,
 }
 
 impl PinsetHeader {
     pub const fn builder(
-        version: u32,
+        version: u8,
         aead_alg: AeadAlgorithm,
         key_source: KeySource,
-        store_id: Vec<u8>,
+        store_id: [u8; 16],
         nonce: Vec<u8>,
     ) -> HeaderBuilder {
         HeaderBuilder {
@@ -151,6 +156,7 @@ impl PinsetHeader {
     }
 
     pub const fn validate(&self) -> Result<()> {
+        //Aydrian- Why is this const?
         // TODO: Add some error handling here tomorrow
         if self.version == 0 {
             return Err(PinsetError::Invalid("Version must be >= 1"));
@@ -182,15 +188,15 @@ impl PinsetHeader {
 }
 
 pub struct HeaderBuilder {
-    version: u32, // Why should version be this big? //Alex- Redundancy, could it be a u8 or u16?
+    version: u8,
     aead_alg: AeadAlgorithm,
     key_source: KeySource,
     kdf: Option<String>,
     kek_locator: Option<String>,
-    store_id: Vec<u8>,
+    store_id: [u8; 16],
     seq: u64,
     nonce: Vec<u8>,
-    wrap: Option<Vec<u8>>,
+    wrap: Option<Zeroizing<Box<[u8]>>>,
 }
 
 impl HeaderBuilder {
@@ -209,8 +215,9 @@ impl HeaderBuilder {
         self
     }
 
-    pub fn wrap(mut self, w: Vec<u8>) -> Self {
-        self.wrap = Some(w);
+    pub fn wrap(mut self, w: impl Into<Vec<u8>>) -> Self {
+        let boxed: Box<[u8]> = w.into().into_boxed_slice();
+        self.wrap = Some(Zeroizing::from(boxed));
         self
     }
 
@@ -235,24 +242,25 @@ impl HeaderBuilder {
 pub struct PinsetRecord {
     pub peer_id: Vec<u8>, // Can this be a stack allocated?
     pub key_type: KeyType,
-    pub key_data: Vec<u8>, // same as above ^
+    pub key_data: Zeroizing<Box<[u8]>>, // same as above ^
     pub added_at: DateTime<Utc>,
     pub expires_at: Option<DateTime<Utc>>,
-    pub flags: PinsetFlags, // TODO: change to bitmask (probably u8)
+    pub flags: PinsetFlags, // TODO: change to bitmask (u8)
 }
 
 impl PinsetRecord {
-    pub const fn new(
+    pub fn new(
         peer_id: Vec<u8>,
         key_type: KeyType,
-        key_data: Vec<u8>,
+        key_data: impl Into<Vec<u8>>,
         added_at: DateTime<Utc>,
         flags: PinsetFlags,
     ) -> Self {
+        let boxed: Box<[u8]> = key_data.into().into_boxed_slice();
         Self {
             peer_id,
             key_type,
-            key_data,
+            key_data: Zeroizing::from(boxed),
             added_at,
             expires_at: None,
             flags,

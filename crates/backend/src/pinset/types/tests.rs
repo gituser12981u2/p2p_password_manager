@@ -1,8 +1,7 @@
-use std::io::Cursor;
-
 use crate::pinset::types::{
     AeadAlgorithm, KeySource, KeyType, PinsetFlags, PinsetHeader, PinsetRecord,
 };
+use std::io::Cursor;
 
 #[test]
 fn pinset_record_is_active() {
@@ -43,11 +42,12 @@ fn pinset_record_is_active() {
 fn pinset_header_validation() {
     // test for valid header format.
     let valid_nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
+    let store_id = [0u8; 16];
     let _valid_header = PinsetHeader::builder(
         1,
         AeadAlgorithm::AesGcm,
         KeySource::OsKeyStore,
-        b"store123".to_vec(),
+        store_id,
         valid_nonce,
     )
     .build()
@@ -59,7 +59,7 @@ fn pinset_header_validation() {
         key_source: KeySource::OsKeyStore,
         kdf: None,
         kek_locator: None,
-        store_id: b"store".into(),
+        store_id,
         seq: 0,
         nonce: vec![0u8; 12],
         wrap: None,
@@ -73,7 +73,7 @@ fn pinset_header_validation() {
         key_source: KeySource::OsKeyStore,
         kdf: None,
         kek_locator: None,
-        store_id: b"store".to_vec(),
+        store_id,
         seq: 0,
         nonce: vec![0u8; 10], // invalid length for AES-GCM
         wrap: None,
@@ -84,13 +84,14 @@ fn pinset_header_validation() {
 #[test]
 fn pinset_header_builder_patterns() {
     let nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
+    let store_id = [0u8; 16];
 
     // test builder with all optional fields
     let header = PinsetHeader::builder(
         2,
         AeadAlgorithm::AesGcm,
         KeySource::PassphraseKdf,
-        b"complex_store".to_vec(),
+        store_id,
         nonce,
     )
     .kdf("pbkdf2".to_string())
@@ -109,7 +110,10 @@ fn pinset_header_builder_patterns() {
         Some("keychain:password_manager".to_string())
     );
     assert_eq!(header.seq, 42);
-    assert_eq!(header.wrap, Some(vec![0xde, 0xad, 0xbe, 0xef]));
+    assert_eq!(
+        header.wrap.as_deref().map(|v| v.as_ref()),
+        Some(&[0xde, 0xad, 0xbe, 0xef][..])
+    );
 }
 
 #[test]

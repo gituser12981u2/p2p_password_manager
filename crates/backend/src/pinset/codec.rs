@@ -4,6 +4,7 @@ use crate::pinset::types::{
 };
 use chrono::DateTime;
 use std::io::{Read, Write};
+use zeroize::Zeroizing;
 
 pub trait TlvEncode {
     fn encode_to<W: Write>(&self, w: W) -> Result<()>;
@@ -30,9 +31,7 @@ impl TlvEncode for PinsetHeader {
         w.write_all(&[self.aead_alg as u8])?;
         w.write_all(&[self.key_source as u8])?;
         w.write_all(&self.seq.to_be_bytes())?;
-        w.write_all(&(self.store_id.len() as u16).to_be_bytes())?;
         w.write_all(&self.store_id)?;
-        w.write_all(&[self.nonce.len() as u8])?;
         w.write_all(&self.nonce)?;
 
         // TODO: Write the optional fields (kdf, kek_locator, wrap)
@@ -51,9 +50,9 @@ impl TlvDecode for PinsetHeader {
             return Err(PinsetError::BadMagic);
         }
 
-        let mut buf = [0u8; 4];
+        let mut buf = [0u8; 1];
         r.read_exact(&mut buf)?;
-        let version = u32::from_be_bytes(buf);
+        let version = u8::from_be_bytes(buf);
 
         let mut buf = [0u8; 1];
         r.read_exact(&mut buf)?;
@@ -73,22 +72,17 @@ impl TlvDecode for PinsetHeader {
         r.read_exact(&mut buf)?;
         let seq = u64::from_be_bytes(buf);
 
-        let mut buf = [0u8; 2];
-        r.read_exact(&mut buf)?;
-        let store_id_len = u16::from_be_bytes(buf) as usize;
-        let mut store_id = vec![0; store_id_len];
+        let mut store_id = [0u8; 16];
         r.read_exact(&mut store_id)?;
 
-        let mut buf = [0u8; 1];
-        r.read_exact(&mut buf)?;
-        let nonce_len = buf[0] as usize;
-        let mut nonce = vec![0; nonce_len];
+        let nonce_len = aead_alg.nonce_len();
+        let mut nonce = vec![0u8; nonce_len];
         r.read_exact(&mut nonce)?;
 
-        // TODO: handle optional TLVs
+        // TODO: handle optional TLVs until END
         let kdf: Option<String> = None;
         let kek_locator: Option<String> = None;
-        let wrap: Option<Vec<u8>> = None;
+        let wrap: Option<Zeroizing<Box<[u8]>>> = None;
 
         let header = Self {
             version,
@@ -118,7 +112,7 @@ impl TlvEncode for PinsetRecord {
 
         // Write key_len (u16) + key_data
         w.write_all(&(self.key_data.len() as u16).to_be_bytes())?;
-        w.write_all(&self.key_data)?;
+        w.write_all(self.key_data.as_ref())?;
 
         // Write added_at (u64 BE) as Unix timestamp
         w.write_all(&self.added_at.timestamp().to_be_bytes())?;
@@ -168,8 +162,9 @@ impl TlvDecode for PinsetRecord {
         // Read key_len (u16) + key_data
         r.read_exact(&mut buf[..2])?;
         let key_len = u16::from_be_bytes([buf[0], buf[1]]) as usize;
-        let mut key_data = vec![0; key_len];
-        r.read_exact(&mut key_data)?;
+        let mut key_vec = vec![0; key_len];
+        r.read_exact(&mut key_vec)?;
+        let key_data = Zeroizing::from(key_vec.into_boxed_slice());
 
         // Read added_at (u64 BE) as Unix timestamp
         r.read_exact(&mut buf[..8])?;
