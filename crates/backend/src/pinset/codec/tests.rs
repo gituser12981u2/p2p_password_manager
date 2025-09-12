@@ -1,7 +1,7 @@
 use std::io::Cursor;
 
 use crate::pinset::types::{
-    AeadAlgorithm, KeySource, KeyType, PinsetFlags, PinsetHeader, PinsetRecord,
+    AeadAlgorithm, KeySource, KeyType, PinsetError, PinsetFlags, PinsetHeader, PinsetRecord,
 };
 
 #[test]
@@ -43,6 +43,104 @@ fn round_trip_buffered() {
     let bytes = header.encode().expect("encode");
     let read_back = PinsetHeader::from_reader(Cursor::new(&bytes)).expect("from_reader");
     assert_eq!(read_back, header)
+}
+
+#[test]
+fn header_tlv_round_trip_all_fields() {
+    let version = 1;
+    let store_id = [0u8; 16];
+    let nonce = [0u8; 12];
+    let header = PinsetHeader::builder(
+        version,
+        AeadAlgorithm::AesGcm,
+        KeySource::OsKeyStore,
+        store_id,
+        nonce,
+    )
+    .kdf("pbkdf2".to_string())
+    .kek_locator("keychain:password_manager".to_string())
+    .wrap(vec![0xde, 0xad, 0xbe, 0xef])
+    .build()
+    .expect("build");
+
+    let mut buf = Vec::new();
+    header.write_to(&mut buf).expect("encode");
+
+    let round = PinsetHeader::from_reader(Cursor::new(&buf)).expect("decode");
+    assert_eq!(round.version, 1);
+    assert_eq!(round.aead_alg as u8, header.aead_alg as u8);
+    assert_eq!(round.key_source as u8, header.key_source as u8);
+    assert_eq!(round.store_id, header.store_id);
+    assert_eq!(round.nonce, header.nonce);
+    assert_eq!(round.kdf.as_deref(), Some("pbkdf2"));
+    assert_eq!(
+        round.kek_locator.as_deref(),
+        Some("keychain:password_manager")
+    );
+    assert_eq!(
+        round.wrap.as_deref().map(|b| b.as_ref()),
+        Some(&[0xde, 0xad, 0xbe, 0xef][..])
+    );
+}
+
+#[test]
+fn header_tlv_round_trip_no_optionals() {
+    let version = 1;
+    let store_id = [0u8; 16];
+    let nonce = [0u8; 12];
+    let header = PinsetHeader::builder(
+        version,
+        AeadAlgorithm::AesGcm,
+        KeySource::OsKeyStore,
+        store_id,
+        nonce,
+    )
+    .build()
+    .expect("build");
+
+    let mut buf = Vec::new();
+    header.write_to(&mut buf).expect("encode");
+    let round = PinsetHeader::from_reader(Cursor::new(&buf)).expect("decode");
+
+    assert_eq!(round.version, 1);
+    assert!(round.kdf.is_none());
+    assert!(round.kek_locator.is_none());
+    assert!(round.wrap.is_none());
+}
+
+#[test]
+fn header_tlv_unknown_tag_error() {
+    let version = 1;
+    let store_id = [0u8; 16];
+    let nonce = [0u8; 12];
+    let header = PinsetHeader::builder(
+        version,
+        AeadAlgorithm::AesGcm,
+        KeySource::OsKeyStore,
+        store_id,
+        nonce,
+    )
+    .build()
+    .expect("build");
+
+    let buf = header.encode().expect("encode");
+
+    assert_eq!(buf.last().copied(), Some(0x7F));
+    let end_pos = buf.len() - 1;
+
+    // Insert an unknown TLV before END: tag=0x55, len=0003, val=0x02 0x02 0x03
+    let mut injected = Vec::with_capacity(buf.len() + 1 + 2 + 3);
+    injected.extend_from_slice(&buf[..end_pos]);
+    injected.push(0x55);
+    injected.extend_from_slice(&(3u16.to_be_bytes()));
+    injected.extend_from_slice(&[0x01, 0x02, 0x03]);
+    injected.push(0x7F);
+
+    let err = PinsetHeader::from_reader(Cursor::new(&injected)).unwrap_err();
+    match err {
+        PinsetError::Invalid(msg) => assert!(msg.contains("unknown")),
+        _ => panic!("expected Invalid(..) for unknown tlv tag, got {:?}", err),
+    }
 }
 
 #[test]
