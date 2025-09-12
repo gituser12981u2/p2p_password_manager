@@ -41,7 +41,7 @@ fn pinset_record_is_active() {
 #[test]
 fn pinset_header_validation() {
     // test for valid header format.
-    let valid_nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
+    let valid_nonce = [0u8; 12];
     let store_id = [0u8; 16];
     let _valid_header = PinsetHeader::builder(
         1,
@@ -61,29 +61,15 @@ fn pinset_header_validation() {
         kek_locator: None,
         store_id,
         seq: 0,
-        nonce: vec![0u8; 12],
+        nonce: [0u8; 12],
         wrap: None,
     };
     assert!(invalid_version.validate().is_err());
-
-    // test for invalid nonce length
-    let invalid_nonce = PinsetHeader {
-        version: 1,
-        aead_alg: AeadAlgorithm::AesGcm,
-        key_source: KeySource::OsKeyStore,
-        kdf: None,
-        kek_locator: None,
-        store_id,
-        seq: 0,
-        nonce: vec![0u8; 10], // invalid length for AES-GCM
-        wrap: None,
-    };
-    assert!(invalid_nonce.validate().is_err());
 }
 
 #[test]
 fn pinset_header_builder_patterns() {
-    let nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
+    let nonce = [0u8; 12];
     let store_id = [0u8; 16];
 
     // test builder with all optional fields
