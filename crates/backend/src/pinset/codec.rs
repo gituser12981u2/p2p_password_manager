@@ -75,8 +75,7 @@ impl TlvDecode for PinsetHeader {
         let mut store_id = [0u8; 16];
         r.read_exact(&mut store_id)?;
 
-        let nonce_len = aead_alg.nonce_len();
-        let mut nonce = vec![0u8; nonce_len];
+        let mut nonce = [0u8; 12];
         r.read_exact(&mut nonce)?;
 
         // TODO: handle optional TLVs until END

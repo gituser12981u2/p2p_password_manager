@@ -130,7 +130,7 @@ pub struct PinsetHeader {
     pub kek_locator: Option<String>, //This needs to be changed at some point, probably? I'm concerned about utf16 windows
     pub store_id: [u8; 16],
     pub seq: u64,
-    pub nonce: Vec<u8>,
+    pub nonce: [u8; 12],
     pub wrap: Option<Zeroizing<Box<[u8]>>>,
 }
 
@@ -140,7 +140,7 @@ impl PinsetHeader {
         aead_alg: AeadAlgorithm,
         key_source: KeySource,
         store_id: [u8; 16],
-        nonce: Vec<u8>,
+        nonce: [u8; 12],
     ) -> HeaderBuilder {
         HeaderBuilder {
             version,
@@ -162,8 +162,7 @@ impl PinsetHeader {
             return Err(PinsetError::Invalid("Version must be >= 1"));
         }
 
-        let expected = self.aead_alg.nonce_len();
-        if self.nonce.len() != expected {
+        if self.nonce.len() != self.aead_alg.nonce_len() {
             return Err(PinsetError::Invalid("Invalid nonce length"));
         }
         Ok(())
@@ -195,7 +194,7 @@ pub struct HeaderBuilder {
     kek_locator: Option<String>,
     store_id: [u8; 16],
     seq: u64,
-    nonce: Vec<u8>,
+    nonce: [u8; 12],
     wrap: Option<Zeroizing<Box<[u8]>>>,
 }
 

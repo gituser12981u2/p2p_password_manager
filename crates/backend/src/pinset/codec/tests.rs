@@ -8,7 +8,7 @@ use crate::pinset::types::{
 fn round_trip_streaming() {
     let version = 1;
     let store_id = [0u8; 16];
-    let nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
+    let nonce = [0u8; 12];
     let header = PinsetHeader::builder(
         version,
         AeadAlgorithm::AesGcm,
@@ -30,7 +30,7 @@ fn round_trip_streaming() {
 fn round_trip_buffered() {
     let version = 1;
     let store_id = [0u8; 16];
-    let nonce = vec![0u8; AeadAlgorithm::AesGcm.nonce_len()];
+    let nonce = [0u8; 12];
     let header = PinsetHeader::builder(
         version,
         AeadAlgorithm::AesGcm,
