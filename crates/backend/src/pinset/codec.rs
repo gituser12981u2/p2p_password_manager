@@ -6,6 +6,11 @@ use chrono::DateTime;
 use std::io::{Read, Write};
 use zeroize::Zeroizing;
 
+const TLV_KDF: u8 = 0x01;
+const TLV_KEK_LOCATOR: u8 = 0x02;
+const TLV_WRAP: u8 = 0x03;
+const TLV_END: u8 = 0x7F;
+
 pub trait TlvEncode {
     fn encode_to<W: Write>(&self, w: W) -> Result<()>;
     fn encode(&self) -> Result<Vec<u8>> {
@@ -22,6 +27,20 @@ pub trait TlvDecode: Sized {
     }
 }
 
+fn write_tlv<W: Write>(mut w: W, t: u8, v: &[u8]) -> Result<()> {
+    w.write_all(&[t])?;
+    let len = u16::try_from(v.len()).map_err(|_| PinsetError::Invalid("TLV too long"))?;
+    w.write_all(&len.to_be_bytes())?;
+    w.write_all(v)?;
+    Ok(())
+}
+
+fn read_exact_into<R: Read>(mut r: R, len: usize) -> Result<Vec<u8>> {
+    let mut v = vec![0u8; len];
+    r.read_exact(&mut v)?;
+    Ok(v)
+}
+
 impl TlvEncode for PinsetHeader {
     fn encode_to<W: Write>(&self, mut w: W) -> Result<()> {
         self.validate()?;
@@ -34,9 +53,17 @@ impl TlvEncode for PinsetHeader {
         w.write_all(&self.store_id)?;
         w.write_all(&self.nonce)?;
 
-        // TODO: Write the optional fields (kdf, kek_locator, wrap)
+        // Optional TLVs
+        if let Some(kdf) = &self.kdf {
+            write_tlv(&mut w, TLV_KDF, kdf.as_bytes())?;
+        }
+        if let Some(kek) = &self.kek_locator {
+            write_tlv(&mut w, TLV_KEK_LOCATOR, kek.as_bytes())?;
+        }
+        if let Some(wrap) = &self.wrap {
+            write_tlv(&mut w, TLV_WRAP, wrap.as_ref())?;
+        }
 
-        const TLV_END: u8 = 0x7F;
         w.write_all(&[TLV_END])?;
         Ok(())
     }
@@ -50,27 +77,26 @@ impl TlvDecode for PinsetHeader {
             return Err(PinsetError::BadMagic);
         }
 
-        let mut buf = [0u8; 1];
-        r.read_exact(&mut buf)?;
-        let version = u8::from_be_bytes(buf);
+        let mut buf1 = [0u8; 1];
+        r.read_exact(&mut buf1)?;
+        let version = u8::from_be_bytes(buf1);
 
-        let mut buf = [0u8; 1];
-        r.read_exact(&mut buf)?;
-        let aead_alg = match buf[0] {
+        r.read_exact(&mut buf1)?;
+        let aead_alg = match buf1[0] {
             1 => AeadAlgorithm::AesGcm,
             _ => return Err(PinsetError::Invalid("unknown AEAD algorithm")),
         };
 
-        r.read_exact(&mut buf)?;
-        let key_source = match buf[0] {
+        r.read_exact(&mut buf1)?;
+        let key_source = match buf1[0] {
             1 => KeySource::OsKeyStore,
             2 => KeySource::PassphraseKdf,
             _ => return Err(PinsetError::Invalid("Unknown key source")),
         };
 
-        let mut buf = [0u8; 8];
-        r.read_exact(&mut buf)?;
-        let seq = u64::from_be_bytes(buf);
+        let mut buf8 = [0u8; 8];
+        r.read_exact(&mut buf8)?;
+        let seq = u64::from_be_bytes(buf8);
 
         let mut store_id = [0u8; 16];
         r.read_exact(&mut store_id)?;
@@ -78,10 +104,42 @@ impl TlvDecode for PinsetHeader {
         let mut nonce = [0u8; 12];
         r.read_exact(&mut nonce)?;
 
-        // TODO: handle optional TLVs until END
-        let kdf: Option<String> = None;
-        let kek_locator: Option<String> = None;
-        let wrap: Option<Zeroizing<Box<[u8]>>> = None;
+        let mut kdf: Option<String> = None;
+        let mut kek_locator: Option<String> = None;
+        let mut wrap: Option<Zeroizing<Box<[u8]>>> = None;
+
+        loop {
+            r.read_exact(&mut buf1)?;
+            let tag = buf1[0];
+            if tag == TLV_END {
+                break;
+            }
+
+            // length
+            let mut buf2 = [0u8; 2];
+            r.read_exact(&mut buf2)?;
+            let len = u16::from_be_bytes(buf2) as usize;
+
+            match tag {
+                TLV_KDF => {
+                    let v = read_exact_into(&mut r, len)?;
+                    let s = std::str::from_utf8(&v)
+                        .map_err(|_| PinsetError::Invalid("kdf not valid utf-8"))?;
+                    kdf = Some(s.to_owned())
+                }
+                TLV_KEK_LOCATOR => {
+                    let v = read_exact_into(&mut r, len)?;
+                    let s = std::str::from_utf8(&v)
+                        .map_err(|_| PinsetError::Invalid("kek_locator not valid utf-8"))?;
+                    kek_locator = Some(s.to_owned())
+                }
+                TLV_WRAP => {
+                    let v = read_exact_into(&mut r, len)?;
+                    wrap = Some(Zeroizing::from(v.into_boxed_slice()));
+                }
+                _ => return Err(PinsetError::Invalid("unknown TLV tag")),
+            }
+        }
 
         let header = Self {
             version,
@@ -102,15 +160,21 @@ impl TlvDecode for PinsetHeader {
 
 impl TlvEncode for PinsetRecord {
     fn encode_to<W: Write>(&self, mut w: W) -> Result<()> {
-        // Write peer_id_len (u16) + peer_id
-        w.write_all(&(self.peer_id.len() as u16).to_be_bytes())?;
+        // peer_id_len(u16), peer_id ([len])
+        let pid_len = u16::try_from(self.peer_id.len())
+            .map_err(|_| PinsetError::Invalid("peer_id too long"))?;
+
+        w.write_all(&pid_len.to_be_bytes())?;
         w.write_all(&self.peer_id)?; //We could be more specific with error handling on write
 
         // Write key_type (u8)
         w.write_all(&[self.key_type as u8])?;
 
-        // Write key_len (u16) + key_data
-        w.write_all(&(self.key_data.len() as u16).to_be_bytes())?;
+        // Write key_len (u16), key_data ([len])
+        let key_len = u16::try_from(self.key_data.len())
+            .map_err(|_| PinsetError::Invalid("key_data too long"))?;
+
+        w.write_all(&key_len.to_be_bytes())?;
         w.write_all(self.key_data.as_ref())?;
 
         // Write added_at (u64 BE) as Unix timestamp

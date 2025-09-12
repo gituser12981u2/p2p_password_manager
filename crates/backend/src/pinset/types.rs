@@ -9,7 +9,7 @@ aead_alg (u8)
 key_source (u8)
 seq(u64 BE)
 store_id (16 bytes)
-nonce (12 bytes)           // nonce length is implied by aead_alg
+nonce (12 bytes)
 [ TLVs ]
  TLV: type(u8), len(u16 BE), value([len])
  types: 0x01=KDF, 0x02=KEK_LOCATOR, 0x03=WRAP, 0x7F=END
@@ -121,7 +121,7 @@ wrap (optional wrap FEK under a KEK)
 
 */
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)] // Remove serialize and deserialize for now since Zeroize does not like them
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PinsetHeader {
     pub version: u8,
     pub aead_alg: AeadAlgorithm,
@@ -169,7 +169,6 @@ impl PinsetHeader {
     }
 
     pub fn encode(&self) -> Result<Vec<u8>> {
-        // Ok(buffer)
         <Self as TlvEncode>::encode(self)
     }
 
