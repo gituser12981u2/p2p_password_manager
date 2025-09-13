@@ -14,7 +14,7 @@ fn pinset_record_is_active() {
         KeyType::Ed25519,
         b"key".to_vec(),
         now,
-        PinsetFlags::Active,
+        PinsetFlags::ACTIVE,
     );
 
     let retired_record = PinsetRecord::new(
@@ -22,7 +22,7 @@ fn pinset_record_is_active() {
         KeyType::Ed25519,
         b"key".to_vec(),
         now,
-        PinsetFlags::Retired,
+        PinsetFlags::RETIRED,
     );
 
     let tofu_record = PinsetRecord::new(
@@ -30,7 +30,7 @@ fn pinset_record_is_active() {
         KeyType::Ed25519,
         b"key".to_vec(),
         now,
-        PinsetFlags::Tofu,
+        PinsetFlags::TOFU,
     );
 
     assert!(active_record.is_active());
@@ -119,7 +119,7 @@ fn datetime_edge_cases() {
         KeyType::Ed25519,
         b"key".to_vec(),
         epoch,
-        PinsetFlags::Active,
+        PinsetFlags::ACTIVE,
     )
     .with_expiration(DateTime::from_timestamp(1, 0).unwrap());
 

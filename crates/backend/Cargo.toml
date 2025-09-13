@@ -8,6 +8,7 @@ path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.99"
+bitflags = { version = "2.6.0", features = ["serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 ed25519-dalek = { version = "2.2.0", features = ["rand_core", "pkcs8"]}
 hex = "0.4.3"

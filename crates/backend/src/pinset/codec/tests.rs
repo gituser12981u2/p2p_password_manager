@@ -155,7 +155,7 @@ fn pinset_record_round_trip() {
         KeyType::Ed25519,
         b"keydata".to_vec(),
         now,
-        PinsetFlags::Active,
+        PinsetFlags::ACTIVE,
     )
     .with_expiration(later);
 
@@ -172,7 +172,7 @@ fn pinset_record_round_trip() {
         decoded.expires_at.map(|dt| dt.timestamp()),
         record.expires_at.map(|dt| dt.timestamp())
     );
-    assert!(matches!(decoded.flags, PinsetFlags::Active));
+    assert!(matches!(decoded.flags, PinsetFlags::ACTIVE));
 
     // Test is_expired functionality
     let past = now - chrono::Duration::hours(1);
@@ -192,7 +192,7 @@ fn pinset_record_no_expiration() {
         KeyType::Spki,
         b"spki_key_data".to_vec(),
         now,
-        PinsetFlags::Retired,
+        PinsetFlags::RETIRED,
     );
 
     // check serialisation without expiration
@@ -204,7 +204,7 @@ fn pinset_record_no_expiration() {
     assert_eq!(decoded.key_data, record.key_data);
     assert_eq!(decoded.added_at.timestamp(), record.added_at.timestamp());
     assert_eq!(decoded.expires_at, None);
-    assert!(matches!(decoded.flags, PinsetFlags::Retired));
+    assert!(matches!(decoded.flags, PinsetFlags::RETIRED));
 
     // check that record never expires when no expiration is set
     let future = now + chrono::Duration::days(365);
@@ -223,7 +223,7 @@ fn pinset_record_pq_hybrid_tofu() {
         KeyType::PqHybrid,
         vec![0x42; 100], // Large key data
         now,
-        PinsetFlags::Tofu,
+        PinsetFlags::TOFU,
     )
     .with_expiration(expires);
 
@@ -239,7 +239,7 @@ fn pinset_record_pq_hybrid_tofu() {
         decoded.expires_at.map(|dt| dt.timestamp()),
         record.expires_at.map(|dt| dt.timestamp())
     );
-    assert!(matches!(decoded.flags, PinsetFlags::Tofu));
+    assert!(matches!(decoded.flags, PinsetFlags::TOFU));
 }
 
 #[test]
@@ -257,7 +257,7 @@ fn large_data_serialisation() {
         KeyType::Spki,
         large_key_data.clone(),
         now,
-        PinsetFlags::Active,
+        PinsetFlags::ACTIVE,
     );
 
     // serialisation and deserialisation with large data
@@ -267,7 +267,7 @@ fn large_data_serialisation() {
     assert_eq!(decoded.peer_id, large_peer_id);
     assert_eq!(&**decoded.key_data, large_key_data);
     assert_eq!(decoded.key_type, KeyType::Spki);
-    assert!(matches!(decoded.flags, PinsetFlags::Active));
+    assert!(matches!(decoded.flags, PinsetFlags::ACTIVE));
 }
 
 #[test]
@@ -277,7 +277,7 @@ fn empty_data_serialisation() {
     let now = Utc::now();
 
     // test with empty peer_id and key_data
-    let record = PinsetRecord::new(vec![], KeyType::Ed25519, vec![], now, PinsetFlags::Active);
+    let record = PinsetRecord::new(vec![], KeyType::Ed25519, vec![], now, PinsetFlags::ACTIVE);
 
     let bytes = record.encode().expect("encode empty record");
     let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode empty record");
@@ -285,7 +285,7 @@ fn empty_data_serialisation() {
     assert_eq!(decoded.peer_id, vec![]);
     assert_eq!(&**decoded.key_data, &[]);
     assert_eq!(decoded.key_type, KeyType::Ed25519);
-    assert!(matches!(decoded.flags, PinsetFlags::Active));
+    assert!(matches!(decoded.flags, PinsetFlags::ACTIVE));
 }
 
 #[test]
