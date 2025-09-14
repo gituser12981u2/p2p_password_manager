@@ -1,4 +1,8 @@
+#![expect(dead_code, reason = "not currently used but will be")]
 use crate::pinset::types::{PinsetError, Result};
+
+use core::ops::{Index, IndexMut};
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, Copy)]
 /// A simple stack-allocated array with convenience methods for string/byte operations.
@@ -62,9 +66,15 @@ impl<const N: usize> GenericArray<N> {
         Ok(self.buf[index])
     }
 
-    pub fn as_str(&self) -> Result<&str> {
-        let bytes = &self.buf[..self.len];
-        Ok(core::str::from_utf8(bytes).map_err(PinsetError::Utf8Error)?)
+    pub const fn as_str(&self) -> Result<&str> {
+        // SAFETY: We know len is within ranghe and the buffer is never null
+        // This avoids unnecessary UB checks
+        let bytes = unsafe { &*std::ptr::slice_from_raw_parts(self.as_ptr(), self.len) };
+
+        match core::str::from_utf8(bytes) {
+            Ok(s) => Ok(s),
+            Err(e) => Err(PinsetError::Utf8Error(e)),
+        }
     }
 
     pub fn to_str_lossy(&self) -> Cow<'_, str> {
@@ -84,9 +94,6 @@ impl<const N: usize> GenericArray<N> {
         N
     }
 }
-
-use core::ops::{Index, IndexMut};
-use std::borrow::Cow;
 
 impl<const N: usize> Index<usize> for GenericArray<N> {
     type Output = u8;

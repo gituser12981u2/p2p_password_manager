@@ -9,24 +9,30 @@ fn pinset_record_is_active() {
 
     let now = Utc::now();
 
+    let mut active_peer_id = [0u8; 32];
+    active_peer_id[..11].copy_from_slice(b"active_peer");
     let active_record = PinsetRecord::new(
-        b"active_peer".to_vec(),
+        active_peer_id,
         KeyType::Ed25519,
         b"key".to_vec(),
         now,
         PinsetFlags::ACTIVE,
     );
 
+    let mut retired_peer_id = [0u8; 32];
+    retired_peer_id[..12].copy_from_slice(b"retired_peer");
     let retired_record = PinsetRecord::new(
-        b"retired_peer".to_vec(),
+        retired_peer_id,
         KeyType::Ed25519,
         b"key".to_vec(),
         now,
         PinsetFlags::RETIRED,
     );
 
+    let mut tofu_peer_id = [0u8; 32];
+    tofu_peer_id[..9].copy_from_slice(b"tofu_peer");
     let tofu_record = PinsetRecord::new(
-        b"tofu_peer".to_vec(),
+        tofu_peer_id,
         KeyType::Ed25519,
         b"key".to_vec(),
         now,
@@ -90,10 +96,10 @@ fn pinset_header_builder_patterns() {
     assert_eq!(header.version, 2);
     assert_eq!(header.aead_alg, AeadAlgorithm::AesGcm);
     assert_eq!(header.key_source, KeySource::PassphraseKdf);
-    assert_eq!(header.kdf, Some("pbkdf2".to_string()));
+    assert_eq!(header.kdf.as_deref(), Some("pbkdf2"));
     assert_eq!(
-        header.kek_locator,
-        Some("keychain:password_manager".to_string())
+        header.kek_locator.as_deref(),
+        Some("keychain:password_manager")
     );
     assert_eq!(header.seq, 42);
     assert_eq!(
@@ -114,8 +120,10 @@ fn datetime_edge_cases() {
     // Test with Unix epoch
     let epoch = DateTime::from_timestamp(0, 0).unwrap();
 
+    let mut epoch_peer_id = [0u8; 32];
+    epoch_peer_id[..10].copy_from_slice(b"epoch_peer");
     let record = PinsetRecord::new(
-        b"epoch_peer".to_vec(),
+        epoch_peer_id,
         KeyType::Ed25519,
         b"key".to_vec(),
         epoch,
