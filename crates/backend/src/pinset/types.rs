@@ -31,6 +31,7 @@ flags (u8)                         // bitmask
 */
 
 use crate::pinset::codec::{TlvDecode, TlvEncode};
+use bitflags::bitflags;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
@@ -97,12 +98,13 @@ pub enum KeySource {
     PassphraseKdf = 2,
 }
 
-// TODO: make flags a bitmask instead of an enum
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-pub enum PinsetFlags {
-    Active,
-    Retired,
-    Tofu, //I'm not googling this, too tired.
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct PinsetFlags: u8 {
+        const ACTIVE = 0b00000001;
+        const RETIRED = 0b00000010;
+        const TOFU = 0b00000100;
+    }
 }
 
 /*
@@ -126,8 +128,8 @@ pub struct PinsetHeader {
     pub version: u8,
     pub aead_alg: AeadAlgorithm,
     pub key_source: KeySource,
-    pub kdf: Option<String>,
-    pub kek_locator: Option<String>, //This needs to be changed at some point, probably? I'm concerned about utf16 windows
+    pub kdf: Option<Box<str>>,
+    pub kek_locator: Option<Box<str>>, //This needs to be changed at some point, probably? I'm concerned about utf16 windows
     pub store_id: [u8; 16],
     pub seq: u64,
     pub nonce: [u8; 12],
@@ -155,13 +157,18 @@ impl PinsetHeader {
         }
     }
 
-    pub const fn validate(&self) -> Result<()> {
-        //Aydrian- Why is this const?
+    pub fn validate(&self) -> Result<()> {
         // TODO: Add some error handling here tomorrow
-        if self.version == 0 {
-            return Err(PinsetError::Invalid("Version must be >= 1"));
+        // --Alex gotta add some more validation soon
+        match self.version {
+            0 => return Err(PinsetError::Invalid("Version must be >= 1")),
+            v if v > u8::MAX - 1 => {
+                return Err(PinsetError::Invalid(
+                    "Version must be <= 256 to avoid potential overflow",
+                ));
+            }
+            _ => {} // Valid version, continue validation
         }
-
         if self.nonce.len() != self.aead_alg.nonce_len() {
             return Err(PinsetError::Invalid("Invalid nonce length"));
         }
@@ -189,8 +196,8 @@ pub struct HeaderBuilder {
     version: u8,
     aead_alg: AeadAlgorithm,
     key_source: KeySource,
-    kdf: Option<String>,
-    kek_locator: Option<String>,
+    kdf: Option<Box<str>>,
+    kek_locator: Option<Box<str>>,
     store_id: [u8; 16],
     seq: u64,
     nonce: [u8; 12],
@@ -198,12 +205,12 @@ pub struct HeaderBuilder {
 }
 
 impl HeaderBuilder {
-    pub fn kdf<S: Into<String>>(mut self, s: S) -> Self {
+    pub fn kdf<S: Into<Box<str>>>(mut self, s: S) -> Self {
         self.kdf = Some(s.into());
         self
     }
 
-    pub fn kek_locator<S: Into<String>>(mut self, s: S) -> Self {
+    pub fn kek_locator<S: Into<Box<str>>>(mut self, s: S) -> Self {
         self.kek_locator = Some(s.into());
         self
     }
@@ -213,8 +220,8 @@ impl HeaderBuilder {
         self
     }
 
-    pub fn wrap(mut self, w: impl Into<Vec<u8>>) -> Self {
-        let boxed: Box<[u8]> = w.into().into_boxed_slice();
+    pub fn wrap(mut self, w: impl Into<Box<[u8]>>) -> Self {
+        let boxed: Box<[u8]> = w.into();
         self.wrap = Some(Zeroizing::from(boxed));
         self
     }
@@ -238,23 +245,23 @@ impl HeaderBuilder {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PinsetRecord {
-    pub peer_id: Vec<u8>, // Can this be a stack allocated?
+    pub peer_id: [u8; 32],
     pub key_type: KeyType,
     pub key_data: Zeroizing<Box<[u8]>>, // same as above ^
     pub added_at: DateTime<Utc>,
     pub expires_at: Option<DateTime<Utc>>,
-    pub flags: PinsetFlags, // TODO: change to bitmask (u8)
+    pub flags: PinsetFlags,
 }
 
 impl PinsetRecord {
     pub fn new(
-        peer_id: Vec<u8>,
+        peer_id: [u8; 32],
         key_type: KeyType,
-        key_data: impl Into<Vec<u8>>,
+        key_data: impl Into<Box<[u8]>>,
         added_at: DateTime<Utc>,
         flags: PinsetFlags,
     ) -> Self {
-        let boxed: Box<[u8]> = key_data.into().into_boxed_slice();
+        let boxed: Box<[u8]> = key_data.into();
         Self {
             peer_id,
             key_type,
@@ -275,7 +282,7 @@ impl PinsetRecord {
     }
 
     pub const fn is_active(&self) -> bool {
-        matches!(self.flags, PinsetFlags::Active)
+        self.flags.contains(PinsetFlags::ACTIVE)
     }
 
     pub fn encode(&self) -> Result<Vec<u8>> {
