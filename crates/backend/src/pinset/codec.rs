@@ -104,8 +104,8 @@ impl TlvDecode for PinsetHeader {
         let mut nonce = [0u8; 12];
         r.read_exact(&mut nonce)?;
 
-        let mut kdf: Option<String> = None;
-        let mut kek_locator: Option<String> = None;
+        let mut kdf: Option<Box<str>> = None;
+        let mut kek_locator: Option<Box<str>> = None;
         let mut wrap: Option<Zeroizing<Box<[u8]>>> = None;
 
         loop {
@@ -125,13 +125,13 @@ impl TlvDecode for PinsetHeader {
                     let v = read_exact_into(&mut r, len)?;
                     let s = std::str::from_utf8(&v)
                         .map_err(|_| PinsetError::Invalid("kdf not valid utf-8"))?;
-                    kdf = Some(s.to_owned())
+                    kdf = Some(s.into())
                 }
                 TLV_KEK_LOCATOR => {
                     let v = read_exact_into(&mut r, len)?;
                     let s = std::str::from_utf8(&v)
                         .map_err(|_| PinsetError::Invalid("kek_locator not valid utf-8"))?;
-                    kek_locator = Some(s.to_owned())
+                    kek_locator = Some(s.into())
                 }
                 TLV_WRAP => {
                     let v = read_exact_into(&mut r, len)?;
@@ -160,17 +160,12 @@ impl TlvDecode for PinsetHeader {
 
 impl TlvEncode for PinsetRecord {
     fn encode_to<W: Write>(&self, mut w: W) -> Result<()> {
-        // peer_id_len(u16), peer_id ([len])
-        let pid_len = u16::try_from(self.peer_id.len())
-            .map_err(|_| PinsetError::Invalid("peer_id too long"))?;
-
-        w.write_all(&pid_len.to_be_bytes())?;
-        w.write_all(&self.peer_id)?; //We could be more specific with error handling on write
+        w.write_all(&32u16.to_be_bytes())?;
+        w.write_all(&self.peer_id)?;
 
         // Write key_type (u8)
         w.write_all(&[self.key_type as u8])?;
 
-        // Write key_len (u16), key_data ([len])
         let key_len = u16::try_from(self.key_data.len())
             .map_err(|_| PinsetError::Invalid("key_data too long"))?;
 
@@ -192,10 +187,11 @@ impl TlvEncode for PinsetRecord {
         }
 
         // Write flags (u8)
-        let flags_byte = match self.flags {
-            PinsetFlags::Active => 0,
-            PinsetFlags::Retired => 1,
-            PinsetFlags::Tofu => 2,
+        let flags_byte = match () {
+            _ if self.flags.contains(PinsetFlags::ACTIVE) => 0,
+            _ if self.flags.contains(PinsetFlags::RETIRED) => 1,
+            _ if self.flags.contains(PinsetFlags::TOFU) => 2,
+            _ => 0, // Default to active
         };
         w.write_all(&[flags_byte])?;
 
@@ -207,10 +203,13 @@ impl TlvDecode for PinsetRecord {
     fn decode_from<R: Read>(mut r: R) -> Result<Self> {
         let mut buf = [0u8; 8]; // big enough for the largest read
 
-        // Read peer_id_len (u16) + peer_id
+        // Read peer_id_len (u16) + peer_id - expect exactly 32 bytes
         r.read_exact(&mut buf[..2])?;
         let peer_id_len = u16::from_be_bytes([buf[0], buf[1]]) as usize;
-        let mut peer_id = vec![0; peer_id_len];
+        if peer_id_len != 32 {
+            return Err(PinsetError::Invalid("peer_id must be exactly 32 bytes"));
+        }
+        let mut peer_id = [0u8; 32];
         r.read_exact(&mut peer_id)?;
 
         // Read key_type (u8)
@@ -251,9 +250,9 @@ impl TlvDecode for PinsetRecord {
         // Read flags (u8)
         r.read_exact(&mut buf[..1])?;
         let flags = match buf[0] {
-            0 => PinsetFlags::Active,
-            1 => PinsetFlags::Retired,
-            2 => PinsetFlags::Tofu,
+            0 => PinsetFlags::ACTIVE,
+            1 => PinsetFlags::RETIRED,
+            2 => PinsetFlags::TOFU,
             _ => return Err(PinsetError::Invalid("unknown flags")),
         };
 
