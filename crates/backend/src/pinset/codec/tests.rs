@@ -150,8 +150,10 @@ fn pinset_record_round_trip() {
     let now = Utc::now();
     let later = now + chrono::Duration::hours(1);
 
+    let mut peer_id = [0u8; 32];
+    peer_id[..7].copy_from_slice(b"peer123");
     let record = PinsetRecord::new(
-        b"peer123".to_vec(),
+        peer_id,
         KeyType::Ed25519,
         b"keydata".to_vec(),
         now,
@@ -187,8 +189,10 @@ fn pinset_record_no_expiration() {
     use chrono::Utc;
 
     let now = Utc::now();
+    let mut peer_id = [0u8; 32];
+    peer_id[..7].copy_from_slice(b"peer456");
     let record = PinsetRecord::new(
-        b"peer456".to_vec(),
+        peer_id,
         KeyType::Spki,
         b"spki_key_data".to_vec(),
         now,
@@ -218,8 +222,10 @@ fn pinset_record_pq_hybrid_tofu() {
     let now = Utc::now();
     let expires = now + chrono::Duration::minutes(30);
 
+    let mut peer_id = [0u8; 32];
+    peer_id[..7].copy_from_slice(b"pq_peer");
     let record = PinsetRecord::new(
-        b"pq_peer".to_vec(),
+        peer_id,
         KeyType::PqHybrid,
         vec![0x42; 100], // Large key data
         now,
@@ -248,12 +254,12 @@ fn large_data_serialisation() {
 
     let now = Utc::now();
 
-    // test with maximum size data
-    let large_peer_id = vec![0x55; u16::MAX as usize];
+    // test with 32-byte peer_id and maximum size key data
+    let large_peer_id = [0x55; 32];
     let large_key_data = vec![0xAA; u16::MAX as usize];
 
     let record = PinsetRecord::new(
-        large_peer_id.clone(),
+        large_peer_id,
         KeyType::Spki,
         large_key_data.clone(),
         now,
@@ -276,13 +282,14 @@ fn empty_data_serialisation() {
 
     let now = Utc::now();
 
-    // test with empty peer_id and key_data
-    let record = PinsetRecord::new(vec![], KeyType::Ed25519, vec![], now, PinsetFlags::ACTIVE);
+    // test with empty key_data and zero-filled peer_id
+    let peer_id = [0u8; 32];
+    let record = PinsetRecord::new(peer_id, KeyType::Ed25519, vec![], now, PinsetFlags::ACTIVE);
 
     let bytes = record.encode().expect("encode empty record");
     let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode empty record");
 
-    assert_eq!(decoded.peer_id, vec![]);
+    assert_eq!(decoded.peer_id, [0u8; 32]);
     assert_eq!(&**decoded.key_data, &[]);
     assert_eq!(decoded.key_type, KeyType::Ed25519);
     assert!(matches!(decoded.flags, PinsetFlags::ACTIVE));
@@ -294,24 +301,33 @@ fn error_handling_invalid_data() {
     let result = PinsetRecord::from_reader(Cursor::new(truncated_data));
     assert!(result.is_err());
 
-    // Test with invalid key type
-    let invalid_key_type_data = vec![
-        0x00, 0x04, b'p', b'e', b'e', b'r', // peer_id_len + peer_id
-        0xFF, // Invalid key type
+    // Test with invalid key type - using 32-byte peer_id
+    let mut invalid_key_type_data = vec![
+        0x00, 0x20, // peer_id_len = 32
     ];
+    invalid_key_type_data.extend_from_slice(&[b'p'; 32]); // 32-byte peer_id
+    invalid_key_type_data.push(0xFF); // Invalid key type
     let result = PinsetRecord::from_reader(Cursor::new(invalid_key_type_data));
     assert!(result.is_err());
 
-    // Test with invalid flags
+    // Test with invalid flags - using 32-byte peer_id
     let mut valid_data = vec![
-        0x00, 0x04, b'p', b'e', b'e', b'r', // peer_id_len + peer_id
-        0x01, // Ed25519 key type
-        0x00, 0x03, b'k', b'e', b'y', // key_len + key_data
+        0x00, 0x20, // peer_id_len = 32
     ];
+    valid_data.extend_from_slice(&[b'p'; 32]); // 32-byte peer_id
+    valid_data.push(0x01); // Ed25519 key type
+    valid_data.extend_from_slice(&[0x00, 0x03, b'k', b'e', b'y']); // key_len + key_data
     valid_data.extend_from_slice(&1i64.to_be_bytes()); // added_at timestamp
     valid_data.push(0x00); // has_expires = false
     valid_data.push(0xFF); // Invalid flags value
 
     let result = PinsetRecord::from_reader(Cursor::new(valid_data));
+    assert!(result.is_err());
+
+    // Test with invalid peer_id length (not 32 bytes)
+    let invalid_peer_id_len_data = vec![
+        0x00, 0x10, // peer_id_len = 16 (should be 32)
+    ];
+    let result = PinsetRecord::from_reader(Cursor::new(invalid_peer_id_len_data));
     assert!(result.is_err());
 }

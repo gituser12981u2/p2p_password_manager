@@ -7,6 +7,7 @@ edition = "2024"
 path = "src/lib.rs"
 
 [dependencies]
+aes-gcm = "0.10.3"
 anyhow = "1.0.99"
 bitflags = { version = "2.6.0", features = ["serde"] }
 chrono = { version = "0.4", features = ["serde"] }

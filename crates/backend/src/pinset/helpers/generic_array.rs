@@ -1,4 +1,7 @@
+#![expect(dead_code,reason="will be used later")]
 use crate::pinset::types::{PinsetError, Result};
+use core::ops::{Index, IndexMut};
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, Copy)]
 /// A simple stack-allocated array with convenience methods for string/byte operations.
@@ -22,22 +25,17 @@ impl<const N: usize> GenericArray<N> {
     /// Creates a GenericArray from a byte slice or string slice.
     ///
     /// `input` - A type that can be converted to a byte slice (&str, &[u8], String, etc.)
-    pub fn try_from_bytes<T: AsRef<[u8]>>(input: T) -> Result<Self> {
+     pub fn try_from_bytes<T: AsRef<[u8]>>(input: T) -> Result<Self> {
         let bytes = input.as_ref();
-
-        if bytes.len() + 1 > N {
+        let len=bytes.len();
+        //reserve space for null terminator
+        if len + 1 > N {
             return Err(PinsetError::BufferFull(N));
         }
 
         let mut buf = [0u8; N];
-        let mut len = 0;
-
-        while len < bytes.len() {
-            buf[len] = bytes[len];
-            len += 1;
-        }
-
-        buf[len] = 0; // null terminator
+        buf[..len].copy_from_slice(bytes);
+        buf[len] = 0; // add  the null terminator
 
         Ok(Self { buf, len })
     }
@@ -62,13 +60,24 @@ impl<const N: usize> GenericArray<N> {
         Ok(self.buf[index])
     }
 
-    pub fn as_str(&self) -> Result<&str> {
-        let bytes = &self.buf[..self.len];
-        Ok(core::str::from_utf8(bytes).map_err(PinsetError::Utf8Error)?)
+
+
+    pub const fn as_str(&self) -> Result<&str> {
+        // SAFETY: len is within bounds by construction
+        // Avoid UB check, maybe this can be removed as the compiler may be able to elide it, check via assembly at some point?
+        let bytes = unsafe { &*std::ptr::slice_from_raw_parts(self.buf.as_ptr(), self.len) };
+
+        match str::from_utf8(bytes) {
+            Ok(s) => Ok(s),
+            Err(e) => Err(PinsetError::Utf8Error(e)),
+        }
     }
 
+
     pub fn to_str_lossy(&self) -> Cow<'_, str> {
-        let bytes = &self.buf[..self.len];
+        // SAFETY: len is within bounds by construction
+        // Avoid UB check, maybe this can be removed as the compiler may be able to elide it, check via assembly at some point?
+        let bytes = unsafe { &*std::ptr::slice_from_raw_parts(self.buf.as_ptr(), self.len) };
         String::from_utf8_lossy(bytes)
     }
 
@@ -85,8 +94,6 @@ impl<const N: usize> GenericArray<N> {
     }
 }
 
-use core::ops::{Index, IndexMut};
-use std::borrow::Cow;
 
 impl<const N: usize> Index<usize> for GenericArray<N> {
     type Output = u8;
