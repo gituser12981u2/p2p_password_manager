@@ -1,3 +1,5 @@
 /target
 /.cargo
 /.rustup
+.DS_Store
+.vscode

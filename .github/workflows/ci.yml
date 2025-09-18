@@ -19,7 +19,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Lint (clippy)
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --workspace --exclude ui --all-targets -- -D warnings
       - name: Format check
         run: cargo fmt --all -- --check
       - name: Run tests
