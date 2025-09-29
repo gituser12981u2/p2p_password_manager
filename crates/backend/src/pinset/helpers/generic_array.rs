@@ -77,7 +77,7 @@ impl<const N: usize> GenericArray<N> {
         }
     }
 
-    pub fn to_str_lossy(&self) -> Cow<'_, str> {
+    pub fn as_str_lossy(&self) -> Cow<'_, str> {
         let bytes = &self.buf[..self.len];
         String::from_utf8_lossy(bytes)
     }

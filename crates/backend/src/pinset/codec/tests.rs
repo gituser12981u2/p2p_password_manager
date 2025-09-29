@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::io::Cursor;
 
 use crate::pinset::types::{
@@ -58,7 +59,7 @@ fn header_tlv_round_trip_all_fields() {
         nonce,
     )
     .kdf("pbkdf2".to_string())
-    .kek_locator("keychain:password_manager".to_string())
+    .kek_locator("keychain:password_manager")
     .wrap(vec![0xde, 0xad, 0xbe, 0xef])
     .build()
     .expect("build");
@@ -75,7 +76,7 @@ fn header_tlv_round_trip_all_fields() {
     assert_eq!(round.kdf.as_deref(), Some("pbkdf2"));
     assert_eq!(
         round.kek_locator.as_deref(),
-        Some("keychain:password_manager")
+        Some(OsStr::new("keychain:password_manager"))
     );
     assert_eq!(
         round.wrap.as_deref().map(|b| b.as_ref()),
@@ -319,7 +320,7 @@ fn error_handling_invalid_data() {
     valid_data.extend_from_slice(&[0x00, 0x03, b'k', b'e', b'y']); // key_len + key_data
     valid_data.extend_from_slice(&1i64.to_be_bytes()); // added_at timestamp
     valid_data.push(0x00); // has_expires = false
-    valid_data.push(0xFF); // Invalid flags value
+    valid_data.push(0x08); // Invalid flags value - bit not defined in our bitflags
 
     let result = PinsetRecord::from_reader(Cursor::new(valid_data));
     assert!(result.is_err());
