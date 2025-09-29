@@ -1,6 +1,7 @@
 use crate::pinset::types::{
     AeadAlgorithm, KeySource, KeyType, PinsetFlags, PinsetHeader, PinsetRecord,
 };
+use std::ffi::OsStr;
 use std::io::Cursor;
 
 #[test]
@@ -87,7 +88,7 @@ fn pinset_header_builder_patterns() {
         nonce,
     )
     .kdf("pbkdf2".to_string())
-    .kek_locator("keychain:password_manager".to_string())
+    .kek_locator("keychain:password_manager")
     .seq(42)
     .wrap(vec![0xde, 0xad, 0xbe, 0xef])
     .build()
@@ -99,7 +100,7 @@ fn pinset_header_builder_patterns() {
     assert_eq!(header.kdf.as_deref(), Some("pbkdf2"));
     assert_eq!(
         header.kek_locator.as_deref(),
-        Some("keychain:password_manager")
+        Some(OsStr::new("keychain:password_manager"))
     );
     assert_eq!(header.seq, 42);
     assert_eq!(

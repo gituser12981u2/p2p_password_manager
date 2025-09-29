@@ -3,6 +3,7 @@ use crate::pinset::types::{
     Result,
 };
 use chrono::DateTime;
+use std::ffi::OsStr;
 use std::io::{Read, Write};
 use zeroize::Zeroizing;
 
@@ -58,7 +59,7 @@ impl TlvEncode for PinsetHeader {
             write_tlv(&mut w, TLV_KDF, kdf.as_bytes())?;
         }
         if let Some(kek) = &self.kek_locator {
-            write_tlv(&mut w, TLV_KEK_LOCATOR, kek.as_bytes())?;
+            write_tlv(&mut w, TLV_KEK_LOCATOR, kek.as_encoded_bytes())?;
         }
         if let Some(wrap) = &self.wrap {
             write_tlv(&mut w, TLV_WRAP, wrap.as_ref())?;
@@ -105,7 +106,7 @@ impl TlvDecode for PinsetHeader {
         r.read_exact(&mut nonce)?;
 
         let mut kdf: Option<Box<str>> = None;
-        let mut kek_locator: Option<Box<str>> = None;
+        let mut kek_locator: Option<Box<OsStr>> = None;
         let mut wrap: Option<Zeroizing<Box<[u8]>>> = None;
 
         loop {
@@ -129,9 +130,8 @@ impl TlvDecode for PinsetHeader {
                 }
                 TLV_KEK_LOCATOR => {
                     let v = read_exact_into(&mut r, len)?;
-                    let s = std::str::from_utf8(&v)
-                        .map_err(|_| PinsetError::Invalid("kek_locator not valid utf-8"))?;
-                    kek_locator = Some(s.into())
+                     // SAFETY: The Os str was written as encoded, therefore it can be read as encoded.
+                    kek_locator = unsafe{Some(OsStr::from_encoded_bytes_unchecked(&v).into())};
                 }
                 TLV_WRAP => {
                     let v = read_exact_into(&mut r, len)?;
@@ -187,13 +187,7 @@ impl TlvEncode for PinsetRecord {
         }
 
         // Write flags (u8)
-        let flags_byte = match () {
-            _ if self.flags.contains(PinsetFlags::ACTIVE) => 0,
-            _ if self.flags.contains(PinsetFlags::RETIRED) => 1,
-            _ if self.flags.contains(PinsetFlags::TOFU) => 2,
-            _ => 0, // Default to active
-        };
-        w.write_all(&[flags_byte])?;
+        w.write_all(&[self.flags.bits()])?;
 
         Ok(())
     }
@@ -249,12 +243,8 @@ impl TlvDecode for PinsetRecord {
 
         // Read flags (u8)
         r.read_exact(&mut buf[..1])?;
-        let flags = match buf[0] {
-            0 => PinsetFlags::ACTIVE,
-            1 => PinsetFlags::RETIRED,
-            2 => PinsetFlags::TOFU,
-            _ => return Err(PinsetError::Invalid("unknown flags")),
-        };
+        let flags =
+            PinsetFlags::from_bits(buf[0]).ok_or(PinsetError::Invalid("invalid flags bits"))?;
 
         Ok(Self {
             peer_id,
