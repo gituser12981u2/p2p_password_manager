@@ -34,6 +34,7 @@ use crate::pinset::codec::{TlvDecode, TlvEncode};
 use bitflags::bitflags;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::ffi::OsStr;
 use std::io::{Read, Write};
 use zeroize::Zeroizing; // We do not need serde for TLV. We need to hand roll our encoding and decoding, unless you want to keep it for debugging purposes
 
@@ -101,9 +102,34 @@ pub enum KeySource {
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
     pub struct PinsetFlags: u8 {
-        const ACTIVE = 0b00000001;
-        const RETIRED = 0b00000010;
-        const TOFU = 0b00000100;
+        const ACTIVE = 0b0000_0001;
+        const RETIRED = 0b0000_0010;
+        const TOFU = 0b0000_0100;
+        // Note: 0b1111_1000 bits are reserved for future use
+    }
+}
+
+impl PinsetFlags {
+    /// Reserved bits that should not be set in current version
+    pub const RESERVED: u8 = 0b1111_1000;
+
+    /// Set a pin record as active, automatically removing retired status
+    pub fn set_active(mut self) -> Self {
+        self.remove(PinsetFlags::RETIRED);
+        self.insert(PinsetFlags::ACTIVE);
+        self
+    }
+
+    /// Set a pin record as retired, automatically removing active status
+    pub fn set_retired(mut self) -> Self {
+        self.remove(PinsetFlags::ACTIVE);
+        self.insert(PinsetFlags::RETIRED);
+        self
+    }
+
+    /// Check if the pin record is in a valid state (not both active and retired)
+    pub fn is_valid(&self) -> bool {
+        !(self.contains(PinsetFlags::ACTIVE) && self.contains(PinsetFlags::RETIRED))
     }
 }
 
@@ -129,7 +155,7 @@ pub struct PinsetHeader {
     pub aead_alg: AeadAlgorithm,
     pub key_source: KeySource,
     pub kdf: Option<Box<str>>,
-    pub kek_locator: Option<Box<str>>, //This needs to be changed at some point, probably? I'm concerned about utf16 windows
+    pub kek_locator: Option<Box<OsStr>>,
     pub store_id: [u8; 16],
     pub seq: u64,
     pub nonce: [u8; 12],
@@ -197,7 +223,7 @@ pub struct HeaderBuilder {
     aead_alg: AeadAlgorithm,
     key_source: KeySource,
     kdf: Option<Box<str>>,
-    kek_locator: Option<Box<str>>,
+    kek_locator: Option<Box<OsStr>>,
     store_id: [u8; 16],
     seq: u64,
     nonce: [u8; 12],
@@ -210,8 +236,8 @@ impl HeaderBuilder {
         self
     }
 
-    pub fn kek_locator<S: Into<Box<str>>>(mut self, s: S) -> Self {
-        self.kek_locator = Some(s.into());
+    pub fn kek_locator<S: AsRef<OsStr> + ?Sized>(mut self, s: &S) -> Self {
+        self.kek_locator = Some(s.as_ref().into());
         self
     }
 
