@@ -130,8 +130,8 @@ impl TlvDecode for PinsetHeader {
                 }
                 TLV_KEK_LOCATOR => {
                     let v = read_exact_into(&mut r, len)?;
-                     // SAFETY: The Os str was written as encoded, therefore it can be read as encoded.
-                    kek_locator = unsafe{Some(OsStr::from_encoded_bytes_unchecked(&v).into())};
+                    // SAFETY: The Os str was written as encoded, therefore it can be read as encoded.
+                    kek_locator = unsafe { Some(OsStr::from_encoded_bytes_unchecked(&v).into()) };
                 }
                 TLV_WRAP => {
                     let v = read_exact_into(&mut r, len)?;

@@ -12,6 +12,7 @@ bitflags = { version = "2.6.0", features = ["serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 ed25519-dalek = { version = "2.2.0", features = ["rand_core", "pkcs8"]}
 hex = "0.4.3"
+keyring = { version = "3", features = ["sync-secret-service", "apple-native", "windows-native"] }
 quinn = "0.11.8"
 rand = "0.8"
 rcgen = { version = "0.14.3", default-features = false, features = ["x509-parser", "ring"] }
