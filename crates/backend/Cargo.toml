@@ -8,7 +8,9 @@ path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.99"
+base32 = "0.5"
 bitflags = { version = "2.6.0", features = ["serde"] }
+blake3 = "1.6"
 chrono = { version = "0.4", features = ["serde"] }
 ed25519-dalek = { version = "2.2.0", features = ["rand_core", "pkcs8"]}
 hex = "0.4.3"
@@ -21,5 +23,5 @@ serde = { version = "1.0.219", features = ["derive"] }
 sha2 = "0.10.9"
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["macros", "rt", "time"] }
-x509-parser = "0.17.0"
+x509-parser = "0.18.0"
 zeroize = { version = "1.8.1", features = ["serde"] }
