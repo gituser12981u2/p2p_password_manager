@@ -31,21 +31,21 @@ use zeroize::Zeroizing;
 
 /// Errors that can occur during keychain operations
 #[derive(thiserror::Error, Debug)]
-pub enum KeychainError {
+pub enum KeychainError {                                                                 //reduced error enum to 24 from 32 :)
     #[error("key not found: {0}")]
-    NotFound(String),
+    NotFound(Box<str>),
 
     #[error("access denied: {0}")]
-    AccessDenied(String),
+    AccessDenied(Box<str>),
 
     #[error("invalid key identifier: {0}")]
-    InvalidIdentifier(String),
+    InvalidIdentifier(Box<str>),
 
     #[error("key already exists: {0}")]
-    AlreadyExists(String),
+    AlreadyExists(Box<str>),
 
     #[error("operation not supported on this platform: {0}")]
-    Unsupported(String),
+    Unsupported(Box<str>),
 
     #[error("user cancelled operation")]
     UserCancelled,
@@ -54,10 +54,10 @@ pub enum KeychainError {
     AuthenticationRequired,
 
     #[error("platform-specific error: {0}")]
-    PlatformError(String),
+    PlatformError(Box<str>),
 
     #[error("keyring error: {0}")]
-    Keyring(String),
+    Keyring(Box<str>),
 
     #[error(transparent)]
     Io(#[from] std::io::Error),
@@ -67,19 +67,19 @@ impl From<keyring::Error> for KeychainError {
     fn from(err: keyring::Error) -> Self {
         match err {
             keyring::Error::NoEntry => KeychainError::NotFound("Key not found in keychain".into()),
-            keyring::Error::Invalid(_, _) => KeychainError::InvalidIdentifier(err.to_string()),
-            keyring::Error::PlatformFailure(e) => KeychainError::PlatformError(e.to_string()),
+            keyring::Error::Invalid(_, _) => KeychainError::InvalidIdentifier(err.to_string().into()),
+            keyring::Error::PlatformFailure(e) => KeychainError::PlatformError(e.to_string().into()),
             keyring::Error::Ambiguous(e) => {
-                KeychainError::PlatformError(format!("Ambiguous credentials: {e:?}"))
+                KeychainError::PlatformError(format!("Ambiguous credentials: {e:?}").into())
             }
-            keyring::Error::NoStorageAccess(e) => KeychainError::AccessDenied(e.to_string()),
+            keyring::Error::NoStorageAccess(e) => KeychainError::AccessDenied(e.to_string().into()),
             keyring::Error::TooLong(field, _) => {
-                KeychainError::InvalidIdentifier(format!("{field} is too long"))
+                KeychainError::InvalidIdentifier(format!("{field} is too long").into())
             }
             keyring::Error::BadEncoding(e) => {
-                KeychainError::Keyring(format!("Bad encoding: {e:?}"))
+                KeychainError::Keyring(format!("Bad encoding: {e:?}").into())
             }
-            _ => KeychainError::Keyring(err.to_string()),
+            _ => KeychainError::Keyring(err.to_string().into()),
         }
     }
 }
@@ -143,7 +143,7 @@ pub struct KeyAttributes {
     pub identifier: KeyIdentifier,
 
     /// Optional description/comment
-    pub description: Option<String>,
+    pub description: Option<Box<str>>,
 }
 
 impl KeyAttributes {
@@ -156,7 +156,7 @@ impl KeyAttributes {
     }
 
     /// Add a description
-    pub fn with_description(mut self, desc: impl Into<String>) -> Self {
+    pub fn with_description(mut self, desc: impl Into<Box<str>>) -> Self {
         self.description = Some(desc.into());
         self
     }
@@ -235,28 +235,34 @@ impl Keychain {
         let entry = self.create_entry(&attributes.identifier)?;
 
         // Check if key already exists
-        if entry.get_password().is_ok() {
+        if entry.get_secret().is_ok() {
             return Err(KeychainError::AlreadyExists(
-                attributes.identifier.to_string(),
+                attributes.identifier.to_string().into(),
             ));
         }
 
-        // Store the secret as hex-encoded string to avoid platform encoding issues
-        //
+        // Store the secret as hex-encoded bytes to avoid platform encoding issues
+        // Note: In the future, we should interact with our key_source flag here to know
+        // if we want a passphrase KDF (i.e., the user sets a password to encrypt the file).
+        // For now, we use get_secret/set_secret with hex encoding for reliable binary storage.
         let hex_encoded = hex::encode(key.as_bytes());
         entry
-            .set_password(&hex_encoded)
+            .set_secret(hex_encoded.as_bytes())
             .map_err(KeychainError::from)
     }
 
     pub fn retrieve_key(&self, identifier: &KeyIdentifier) -> KeychainResult<SecureKey> {
         let entry = self.create_entry(identifier)?;
 
-        let hex_encoded = entry.get_password().map_err(KeychainError::from)?;
+        // Retrieve the secret as bytes (hex-encoded)
+        let hex_bytes = entry.get_secret().map_err(KeychainError::from)?;
 
-        // Decode hex string back to binary
-        let decoded = hex::decode(hex_encoded)
-            .map_err(|e| KeychainError::Keyring(format!("Failed to decode stored key: {e}")))?;
+        // Convert bytes to string and decode hex
+        let hex_str = std::str::from_utf8(&hex_bytes)
+            .map_err(|e| KeychainError::Keyring(format!("Invalid UTF-8 in stored hex: {e}").into()))?;
+
+        let decoded = hex::decode(hex_str)
+            .map_err(|e| KeychainError::Keyring(format!("Failed to decode stored key: {e}").into()))?;
 
         Ok(SecureKey::new(decoded))
     }
@@ -265,14 +271,14 @@ impl Keychain {
         let entry = self.create_entry(&attributes.identifier)?;
 
         // Check if key exists first
-        if entry.get_password().is_err() {
-            return Err(KeychainError::NotFound(attributes.identifier.to_string()));
+        if entry.get_secret().is_err() {
+            return Err(KeychainError::NotFound(attributes.identifier.to_string().into()));
         }
 
-        // Update the secret as hex-encoded string
+        // Update the secret as hex-encoded bytes
         let hex_encoded = hex::encode(key.as_bytes());
         entry
-            .set_password(&hex_encoded)
+            .set_secret(hex_encoded.as_bytes())
             .map_err(KeychainError::from)
     }
 
@@ -286,7 +292,7 @@ impl Keychain {
     pub fn key_exists(&self, identifier: &KeyIdentifier) -> KeychainResult<bool> {
         let entry = self.create_entry(identifier)?;
 
-        match entry.get_password() {
+        match entry.get_secret() {
             Ok(_) => Ok(true),
             Err(keyring::Error::NoEntry) => Ok(false),
             Err(e) => Err(KeychainError::from(e)),
@@ -298,7 +304,7 @@ impl Keychain {
     /// Note: The keyring crate doesn't expose detailed platform info,
     /// so this returns basic information based on the target OS.
     pub fn platform_info(&self) -> PlatformInfo {
-        //no android support, annoying!
+        //no android support, annoying! To be added when keychain updates to 4.0 
         #[cfg(target_os = "macos")]
         let name = "macOS Keychain (via keyring)";
 
@@ -365,13 +371,25 @@ pub fn default_keychain() -> KeychainResult<Keychain> {
 }
 
 /// Helper function to generate a Key Encryption Key (KEK) identifier for a pinset store
+///
+/// Hashes the store_id using BLAKE3 and encodes with base32 (without padding) to prevent
+/// correlation. This ensures that someone with access to a user's credential manager or
+/// keystore cannot correlate entries to keystores.
 pub fn kek_identifier_for_store(store_id: &[u8; 16]) -> KeyIdentifier {
-    let store_id_hex = hex::encode(store_id);
+    // Hash the store_id with BLAKE3 to prevent correlation
+    let hash = blake3::hash(store_id);
+
+    // Encode with base32 without padding to make it shorter and more readable
+    let encoded = base32::encode(
+        base32::Alphabet::Crockford,
+        hash.as_bytes()
+    ).trim_end_matches('=').to_lowercase();
+
     KeyIdentifier::new(
         "com.p2p-password-manager.pinset",
-        format!("kek-{store_id_hex}").as_ref(),
+        format!("kek-{}", &encoded).as_ref(),
     )
-    .with_label(format!("Pinset KEK ({})", &store_id_hex[..8]))
+    .with_label(format!("Pinset KEK ({})", &encoded[..8]))
 }
 
 // MOVE THESE TESTS AFTER
@@ -419,7 +437,7 @@ fn test_key_attributes_builder() {
     let attrs = KeyAttributes::new(id.clone()).with_description("Test key");
 
     assert_eq!(attrs.identifier, id);
-    assert_eq!(attrs.description, Some("Test key".to_string()));
+    assert_eq!(attrs.description, Some("Test key".to_string().into()));
 }
 
 #[test]
