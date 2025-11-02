@@ -1,37 +1,12 @@
-/*
-
-ISSUES: https://docs.rs/keyring/latest/keyring/ (found here)
-
-
-Interoperability with Third Parties
-
-Each of the platform-specific credential stores provided by this crate uses an underlying store
-that may also be used by modules written in other languages. If you want to interoperate with these third party credential writers, then you will need to understand the details of how the target, service, and user of this crate’s generic model are used to identify credentials in the platform-specific store. These details are in the implementation of this crate’s secure-storage modules, and are documented in the headers of those modules.
-
-(N.B. Since the included credential store implementations are platform-specific,
- you may need to use the Platform drop-down on docs.rs to view the storage module documentation for your desired platform.)
-Caveats
-
-This module expects passwords to be UTF-8 encoded strings,
-so if a third party has stored an arbitrary byte string then retrieving that as a password will return a BadEncoding error. The returned error will have the raw bytes attached, so you can access them, but you can also just fetch them directly using get_secret rather than get_password.
-
-While this crate’s code is thread-safe,
-the underlying credential stores may not handle access from different threads reliably.
-In particular, accessing the same credential from multiple threads at the same time can fail,
-especially on Windows and Linux, because the accesses may not be serialized in the same order they are made.
- And for RPC-based credential stores such as the dbus-based Secret Service, accesses from multiple threads
- (and even the same thread very quickly) are not recommended, as they may cause the RPC mechanism to fail.
-
-
-*/
-
 use std::borrow::Cow;
 use std::fmt;
+use std::sync::Mutex;
 use zeroize::Zeroizing;
 
 /// Errors that can occur during keychain operations
 #[derive(thiserror::Error, Debug)]
-pub enum KeychainError {                                                                 //reduced error enum to 24 from 32 :)
+pub enum KeychainError {
+    //reduced error enum to 24 from 32 :)
     #[error("key not found: {0}")]
     NotFound(Box<str>),
 
@@ -59,6 +34,9 @@ pub enum KeychainError {                                                        
     #[error("keyring error: {0}")]
     Keyring(Box<str>),
 
+    #[error("lock poisoned: concurrent operation panicked")]
+    LockPoisoned,
+
     #[error(transparent)]
     Io(#[from] std::io::Error),
 }
@@ -67,8 +45,12 @@ impl From<keyring::Error> for KeychainError {
     fn from(err: keyring::Error) -> Self {
         match err {
             keyring::Error::NoEntry => KeychainError::NotFound("Key not found in keychain".into()),
-            keyring::Error::Invalid(_, _) => KeychainError::InvalidIdentifier(err.to_string().into()),
-            keyring::Error::PlatformFailure(e) => KeychainError::PlatformError(e.to_string().into()),
+            keyring::Error::Invalid(_, _) => {
+                KeychainError::InvalidIdentifier(err.to_string().into())
+            }
+            keyring::Error::PlatformFailure(e) => {
+                KeychainError::PlatformError(e.to_string().into())
+            }
             keyring::Error::Ambiguous(e) => {
                 KeychainError::PlatformError(format!("Ambiguous credentials: {e:?}").into())
             }
@@ -132,7 +114,6 @@ impl fmt::Display for KeyIdentifier {
     }
 }
 
-//We need to add atomicity here, so it can only have 1 writer etc in the struct below, see copy pasted explanation at top of file
 /**
  Attributes for storing a key in the keychain
 
@@ -215,15 +196,21 @@ Keychain implementation using the `keyring` crate
 This provides cross-platform secure key storage by wrapping the keyring crate's
 Entry API. Keys are stored as binary secrets using `set_secret`/`get_secret`.
 
+Thread-safety: Uses a Mutex to serialise all keychain operations, ensuring that
+concurrent access from multiple threads is handled safely. This is necessary because
+the underlying OS keychain stores may not be thread-safe on all platforms.
 */
 pub struct Keychain {
-    _private: (), // Prevent direct construction
+    /// Mutex to serialise all keychain operations for thread-safety
+    lock: Mutex<()>,
 }
 
 impl Keychain {
     /// Create a new keychain instance
     pub fn new() -> KeychainResult<Self> {
-        Ok(Self { _private: () })
+        Ok(Self {
+            lock: Mutex::new(()),
+        })
     }
 
     /// Create a keyring Entry for the given identifier
@@ -232,6 +219,9 @@ impl Keychain {
     }
 
     pub fn store_key(&self, key: SecureKey, attributes: KeyAttributes) -> KeychainResult<()> {
+        // Acquire lock to serialise keychain access
+        let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
+
         let entry = self.create_entry(&attributes.identifier)?;
 
         // Check if key already exists
@@ -252,27 +242,37 @@ impl Keychain {
     }
 
     pub fn retrieve_key(&self, identifier: &KeyIdentifier) -> KeychainResult<SecureKey> {
+        // Acquire lock to serialise keychain access
+        let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
+
         let entry = self.create_entry(identifier)?;
 
         // Retrieve the secret as bytes (hex-encoded)
         let hex_bytes = entry.get_secret().map_err(KeychainError::from)?;
 
         // Convert bytes to string and decode hex
-        let hex_str = std::str::from_utf8(&hex_bytes)
-            .map_err(|e| KeychainError::Keyring(format!("Invalid UTF-8 in stored hex: {e}").into()))?;
+        let hex_str = std::str::from_utf8(&hex_bytes).map_err(|e| {
+            KeychainError::Keyring(format!("Invalid UTF-8 in stored hex: {e}").into())
+        })?;
 
-        let decoded = hex::decode(hex_str)
-            .map_err(|e| KeychainError::Keyring(format!("Failed to decode stored key: {e}").into()))?;
+        let decoded = hex::decode(hex_str).map_err(|e| {
+            KeychainError::Keyring(format!("Failed to decode stored key: {e}").into())
+        })?;
 
         Ok(SecureKey::new(decoded))
     }
 
     pub fn update_key(&self, key: SecureKey, attributes: KeyAttributes) -> KeychainResult<()> {
+        // Acquire lock to serialise keychain access
+        let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
+
         let entry = self.create_entry(&attributes.identifier)?;
 
         // Check if key exists first
         if entry.get_secret().is_err() {
-            return Err(KeychainError::NotFound(attributes.identifier.to_string().into()));
+            return Err(KeychainError::NotFound(
+                attributes.identifier.to_string().into(),
+            ));
         }
 
         // Update the secret as hex-encoded bytes
@@ -283,6 +283,9 @@ impl Keychain {
     }
 
     pub fn delete_key(&self, identifier: &KeyIdentifier) -> KeychainResult<()> {
+        // Acquire lock to serialise keychain access
+        let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
+
         let entry = self.create_entry(identifier)?;
 
         entry.delete_credential().map_err(KeychainError::from)
@@ -290,6 +293,9 @@ impl Keychain {
 
     /// Check if a key exists in the keychain
     pub fn key_exists(&self, identifier: &KeyIdentifier) -> KeychainResult<bool> {
+        // Acquire lock to serialise keychain access
+        let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
+
         let entry = self.create_entry(identifier)?;
 
         match entry.get_secret() {
@@ -304,7 +310,7 @@ impl Keychain {
     /// Note: The keyring crate doesn't expose detailed platform info,
     /// so this returns basic information based on the target OS.
     pub fn platform_info(&self) -> PlatformInfo {
-        //no android support, annoying! To be added when keychain updates to 4.0 
+        //no android support, annoying! To be added when keychain updates to 4.0
         #[cfg(target_os = "macos")]
         let name = "macOS Keychain (via keyring)";
 
@@ -380,14 +386,13 @@ pub fn kek_identifier_for_store(store_id: &[u8; 16]) -> KeyIdentifier {
     let hash = blake3::hash(store_id);
 
     // Encode with base32 without padding to make it shorter and more readable
-    let encoded = base32::encode(
-        base32::Alphabet::Crockford,
-        hash.as_bytes()
-    ).trim_end_matches('=').to_lowercase();
+    let encoded = base32::encode(base32::Alphabet::Crockford, hash.as_bytes())
+        .trim_end_matches('=')
+        .to_lowercase();
 
     KeyIdentifier::new(
         "com.p2p-password-manager.pinset",
-        format!("kek-{}", &encoded).as_ref(),
+        format!("kek-{encoded}").as_ref(),
     )
     .with_label(format!("Pinset KEK ({})", &encoded[..8]))
 }
