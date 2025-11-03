@@ -20,6 +20,7 @@ rand = "0.8"
 rcgen = { version = "0.14.3", default-features = false, features = ["x509-parser", "ring"] }
 rustls = { version = "0.23.31", default-features = false, features = ["ring", "std"] }
 serde = { version = "1.0.219", features = ["derive"] }
+serial_test = "3.2.0"
 sha2 = "0.10.9"
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["macros", "rt", "time"] }
