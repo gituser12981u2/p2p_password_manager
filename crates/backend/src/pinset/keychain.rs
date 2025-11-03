@@ -144,15 +144,29 @@ impl KeyAttributes {
 }
 
 /// Securely stored key data with automatic zeroization
-#[derive(Clone)]
+// #[derive(Clone)]
 pub struct SecureKey {
     data: Zeroizing<Box<[u8]>>,
 }
 
 impl SecureKey {
-    pub fn new(data: impl AsRef<[u8]>) -> Self {
+    // pub fn new(data: impl AsRef<[u8]>) -> Self {
+    //     Self {
+    //         data: Zeroizing::new(data.as_ref().into()),
+    //     }
+    // }
+
+    /// Copy from a borrowed slice
+    pub fn from_slice(s: &[u8]) -> Self {
         Self {
-            data: Zeroizing::new(data.as_ref().into()),
+            data: Zeroizing::new(s.into()),
+        }
+    }
+
+    /// Move from an owned Vec without copying.
+    pub fn from_vec(v: Vec<u8>) -> Self {
+        Self {
+            data: Zeroizing::new(v.into_boxed_slice()),
         }
     }
 
@@ -179,17 +193,30 @@ impl fmt::Debug for SecureKey {
     }
 }
 
+// impl From<Vec<u8>> for SecureKey {
+//     fn from(data: Vec<u8>) -> Self {
+//         Self::new(data)
+//     }
+// }
+
+// impl From<&[u8]> for SecureKey {
+//     fn from(data: &[u8]) -> Self {
+//         Self::new(data)
+//     }
+// }
+
 impl From<Vec<u8>> for SecureKey {
-    fn from(data: Vec<u8>) -> Self {
-        Self::new(data)
+    fn from(v: Vec<u8>) -> Self {
+        SecureKey::from_vec(v)
     }
 }
 
 impl From<&[u8]> for SecureKey {
     fn from(data: &[u8]) -> Self {
-        Self::new(data)
+        Self::from_slice(data)
     }
 }
+
 /**
 Keychain implementation using the `keyring` crate
 
@@ -225,6 +252,7 @@ impl Keychain {
         let entry = self.create_entry(&attributes.identifier)?;
 
         // Check if key already exists
+        // !! .get_secret() might prompt a window open on some OS's
         if entry.get_secret().is_ok() {
             return Err(KeychainError::AlreadyExists(
                 attributes.identifier.to_string().into(),
@@ -235,9 +263,8 @@ impl Keychain {
         // Note: In the future, we should interact with our key_source flag here to know
         // if we want a passphrase KDF (i.e., the user sets a password to encrypt the file).
         // For now, we use get_secret/set_secret with hex encoding for reliable binary storage.
-        let hex_encoded = hex::encode(key.as_bytes());
         entry
-            .set_secret(hex_encoded.as_bytes())
+            .set_secret(key.as_bytes())
             .map_err(KeychainError::from)
     }
 
@@ -247,19 +274,9 @@ impl Keychain {
 
         let entry = self.create_entry(identifier)?;
 
-        // Retrieve the secret as bytes (hex-encoded)
-        let hex_bytes = entry.get_secret().map_err(KeychainError::from)?;
+        let bytes = entry.get_secret().map_err(KeychainError::from)?;
 
-        // Convert bytes to string and decode hex
-        let hex_str = std::str::from_utf8(&hex_bytes).map_err(|e| {
-            KeychainError::Keyring(format!("Invalid UTF-8 in stored hex: {e}").into())
-        })?;
-
-        let decoded = hex::decode(hex_str).map_err(|e| {
-            KeychainError::Keyring(format!("Failed to decode stored key: {e}").into())
-        })?;
-
-        Ok(SecureKey::new(decoded))
+        Ok(SecureKey::from(bytes))
     }
 
     pub fn update_key(&self, key: SecureKey, attributes: KeyAttributes) -> KeychainResult<()> {
@@ -276,9 +293,8 @@ impl Keychain {
         }
 
         // Update the secret as hex-encoded bytes
-        let hex_encoded = hex::encode(key.as_bytes());
         entry
-            .set_secret(hex_encoded.as_bytes())
+            .set_secret(key.as_bytes())
             .map_err(KeychainError::from)
     }
 
@@ -298,6 +314,7 @@ impl Keychain {
 
         let entry = self.create_entry(identifier)?;
 
+        // !! .get_secret() might prompt a window open on some OS's
         match entry.get_secret() {
             Ok(_) => Ok(true),
             Err(keyring::Error::NoEntry) => Ok(false),
@@ -386,9 +403,7 @@ pub fn kek_identifier_for_store(store_id: &[u8; 16]) -> KeyIdentifier {
     let hash = blake3::hash(store_id);
 
     // Encode with base32 without padding to make it shorter and more readable
-    let encoded = base32::encode(base32::Alphabet::Crockford, hash.as_bytes())
-        .trim_end_matches('=')
-        .to_lowercase();
+    let encoded = base32::encode(base32::Alphabet::Crockford, hash.as_bytes()).to_lowercase();
 
     KeyIdentifier::new(
         "com.p2p-password-manager.pinset",
@@ -448,7 +463,8 @@ fn test_key_attributes_builder() {
 #[test]
 fn test_secure_key_creation() {
     let data = vec![1, 2, 3, 4, 5];
-    let key = SecureKey::new(data.clone());
+    // let key = SecureKey::new(data.clone());
+    let key = SecureKey::from_slice(&data);
 
     assert_eq!(key.as_bytes(), &data[..]);
     assert_eq!(key.len(), 5);
@@ -457,7 +473,8 @@ fn test_secure_key_creation() {
 
 #[test]
 fn test_secure_key_debug() {
-    let key = SecureKey::new(vec![1, 2, 3, 4, 5]);
+    // let key = SecureKey::new(vec![1, 2, 3, 4, 5]);
+    let key = SecureKey::from_vec(vec![1, 2, 3, 4, 5]);
     let debug_str = format!("{key:?}");
     assert!(debug_str.contains("REDACTED"));
     assert!(debug_str.contains("5 bytes"));
@@ -468,13 +485,15 @@ fn test_secure_key_debug() {
 #[test]
 fn test_secure_key_from_vec() {
     let data = vec![1, 2, 3];
-    let key: SecureKey = data.clone().into();
-    assert_eq!(key.as_bytes(), &data[..]);
+    let keep = data.clone();
+    let key: SecureKey = data.into();
+    assert_eq!(key.as_bytes(), &keep[..]);
 }
 
 #[test]
 fn test_secure_key_from_slice() {
     let data: &[u8] = &[1, 2, 3, 4];
+    // let key: SecureKey = data.into();
     let key: SecureKey = data.into();
     assert_eq!(key.as_bytes(), data);
 }
@@ -516,7 +535,8 @@ fn test_store_and_retrieve_key() {
     let keychain = Keychain::new().expect("Failed to create keychain");
 
     let test_data = vec![1, 2, 3, 4, 5, 6, 7, 8];
-    let key = SecureKey::new(test_data.clone());
+    // let key = SecureKey::new(test_data.clone());
+    let key = SecureKey::from_vec(test_data.clone());
 
     let identifier = KeyIdentifier::new(
         "com.p2p-password-manager.test".into(),
@@ -574,7 +594,8 @@ fn test_key_exists() {
     assert!(!exists.unwrap());
 
     // Store a key
-    let key = SecureKey::new(vec![1, 2, 3]);
+    // let key = SecureKey::new(vec![1, 2, 3]);
+    let key = SecureKey::from_vec(vec![1, 2, 3]);
     let attributes = KeyAttributes::new(identifier.clone());
     keychain
         .store_key(key, attributes)
@@ -604,14 +625,16 @@ fn test_update_key() {
     let _ = keychain.delete_key(&identifier);
 
     // Store initial key
-    let key1 = SecureKey::new(vec![1, 2, 3]);
+    // let key1 = SecureKey::new(vec![1, 2, 3]);
+    let key1 = SecureKey::from_vec(vec![1, 2, 3]);
     let attributes = KeyAttributes::new(identifier.clone());
     keychain
         .store_key(key1, attributes.clone())
         .expect("Failed to store key");
 
     // Update with new data
-    let key2 = SecureKey::new(vec![4, 5, 6]);
+    // let key2 = SecureKey::new(vec![4, 5, 6]);
+    let key2 = SecureKey::from_vec(vec![4, 5, 6]);
     let update_result = keychain.update_key(key2, attributes);
     assert!(
         update_result.is_ok(),
@@ -675,14 +698,16 @@ fn test_store_duplicate_key() {
     let _ = keychain.delete_key(&identifier);
 
     // Store first key
-    let key1 = SecureKey::new(vec![1, 2, 3]);
+    // let key1 = SecureKey::new(vec![1, 2, 3]);
+    let key1 = SecureKey::from_vec(vec![1, 2, 3]);
     let attributes = KeyAttributes::new(identifier.clone());
     keychain
         .store_key(key1, attributes.clone())
         .expect("Failed to store first key");
 
     // Try to store again with same identifier
-    let key2 = SecureKey::new(vec![4, 5, 6]);
+    // let key2 = SecureKey::new(vec![4, 5, 6]);
+    let key2 = SecureKey::from_vec(vec![4, 5, 6]);
     let result = keychain.store_key(key2, attributes);
     assert!(result.is_err());
     assert!(matches!(
@@ -709,7 +734,8 @@ fn test_update_nonexistent_key() {
     let _ = keychain.delete_key(&identifier);
 
     // Try to update non-existent key
-    let key = SecureKey::new(vec![1, 2, 3]);
+    // let key = SecureKey::new(vec![1, 2, 3]);
+    let key = SecureKey::from_vec(vec![1, 2, 3]);
     let attributes = KeyAttributes::new(identifier);
     let result = keychain.update_key(key, attributes);
     assert!(result.is_err());
@@ -722,7 +748,8 @@ fn test_binary_secret_storage() {
 
     // Test with binary data that's not valid UTF-8
     let binary_data = vec![0xFF, 0xFE, 0xFD, 0x00, 0x01, 0x02];
-    let key = SecureKey::new(binary_data.clone());
+    // let key = SecureKey::new(binary_data.clone());
+    let key = SecureKey::from_vec(binary_data.clone());
 
     let identifier = KeyIdentifier::new(
         "com.p2p-password-manager.test".into(),
