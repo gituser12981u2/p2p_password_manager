@@ -27,7 +27,7 @@ cargo bench --features mimalloc-v3
 cp -r ../../target/criterion $BENCH_DIR/mimalloc_v3_results
 
 
-echo "Running mimalloc v3 benchmarks..."
+echo "Running mimalloc v3 secure benchmarks..."
 cargo bench --features mimalloc-v3-secure
 cp -r ../../target/criterion $BENCH_DIR/mimalloc_v3_secure_results
 

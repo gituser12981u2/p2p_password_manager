@@ -1,0 +1,3220 @@
+Running standard allocator benchmarks
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [86.724 ns 87.923 ns 89.468 ns]
+                        change: [−3.3058% −1.0933% +1.0645%] (p = 0.35 > 0.05)
+                        No change in performance detected.
+Found 9 outliers among 100 measurements (9.00%)
+  4 (4.00%) high mild
+  5 (5.00%) high severe
+
+header_decode           time:   [65.851 ns 66.024 ns 66.231 ns]
+                        change: [+44.753% +45.678% +46.581%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+
+header_roundtrip        time:   [240.44 ns 241.93 ns 244.06 ns]
+                        change: [−9.2646% −8.6354% −7.8995%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 13 outliers among 100 measurements (13.00%)
+  5 (5.00%) high mild
+  8 (8.00%) high severe
+
+record_encode           time:   [224.60 ns 226.71 ns 230.25 ns]
+                        change: [+18.302% +20.694% +22.888%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
+
+record_decode           time:   [45.196 ns 45.569 ns 46.037 ns]
+                        change: [−6.0563% −3.4668% −1.0986%] (p = 0.01 < 0.05)
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  4 (4.00%) high mild
+  1 (1.00%) high severe
+
+record_roundtrip        time:   [280.14 ns 281.00 ns 281.86 ns]
+                        change: [−23.253% −21.384% −19.549%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  2 (2.00%) low severe
+  1 (1.00%) low mild
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+
+record_encode_key_sizes/32
+                        time:   [208.29 ns 212.10 ns 215.09 ns]
+                        thrpt:  [141.88 MiB/s 143.88 MiB/s 146.52 MiB/s]
+                 change:
+                        time:   [−9.5718% −7.0718% −4.6712%] (p = 0.00 < 0.05)
+                        thrpt:  [+4.9001% +7.6100% +10.585%]
+                        Performance has improved.
+record_encode_key_sizes/64
+                        time:   [178.32 ns 178.77 ns 179.45 ns]
+                        thrpt:  [340.13 MiB/s 341.41 MiB/s 342.28 MiB/s]
+                 change:
+                        time:   [−10.134% −7.9068% −5.9244%] (p = 0.00 < 0.05)
+                        thrpt:  [+6.2975% +8.5856% +11.276%]
+                        Performance has improved.
+Found 10 outliers among 100 measurements (10.00%)
+  5 (5.00%) high mild
+  5 (5.00%) high severe
+record_encode_key_sizes/128
+                        time:   [274.66 ns 281.81 ns 287.50 ns]
+                        thrpt:  [424.59 MiB/s 433.16 MiB/s 444.44 MiB/s]
+                 change:
+                        time:   [+9.0290% +12.223% +15.245%] (p = 0.00 < 0.05)
+                        thrpt:  [−13.228% −10.891% −8.2813%]
+                        Performance has regressed.
+record_encode_key_sizes/256
+                        time:   [312.88 ns 313.71 ns 314.77 ns]
+                        thrpt:  [775.61 MiB/s 778.23 MiB/s 780.30 MiB/s]
+                 change:
+                        time:   [+42.650% +43.475% +44.309%] (p = 0.00 < 0.05)
+                        thrpt:  [−30.704% −30.302% −29.899%]
+                        Performance has regressed.
+record_encode_key_sizes/512
+                        time:   [411.90 ns 422.17 ns 432.74 ns]
+                        thrpt:  [1.1019 GiB/s 1.1295 GiB/s 1.1577 GiB/s]
+                 change:
+                        time:   [+24.021% +28.475% +32.487%] (p = 0.00 < 0.05)
+                        thrpt:  [−24.521% −22.164% −19.368%]
+                        Performance has regressed.
+record_encode_key_sizes/1024
+                        time:   [354.57 ns 354.92 ns 355.32 ns]
+                        thrpt:  [2.6840 GiB/s 2.6870 GiB/s 2.6897 GiB/s]
+                 change:
+                        time:   [−10.257% −8.3619% −6.8129%] (p = 0.00 < 0.05)
+                        thrpt:  [+7.3110% +9.1249% +11.430%]
+                        Performance has improved.
+Found 9 outliers among 100 measurements (9.00%)
+  7 (7.00%) high mild
+  2 (2.00%) high severe
+
+record_decode_key_sizes/32
+                        time:   [44.232 ns 44.302 ns 44.378 ns]
+                        thrpt:  [687.67 MiB/s 688.86 MiB/s 689.95 MiB/s]
+                 change:
+                        time:   [−6.2102% −4.5853% −3.0450%] (p = 0.00 < 0.05)
+                        thrpt:  [+3.1406% +4.8057% +6.6214%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
+record_decode_key_sizes/64
+                        time:   [52.279 ns 52.402 ns 52.531 ns]
+                        thrpt:  [1.1346 GiB/s 1.1375 GiB/s 1.1401 GiB/s]
+                 change:
+                        time:   [−26.123% −25.643% −25.178%] (p = 0.00 < 0.05)
+                        thrpt:  [+33.650% +34.486% +35.361%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+record_decode_key_sizes/128
+                        time:   [76.914 ns 79.221 ns 82.241 ns]
+                        thrpt:  [1.4495 GiB/s 1.5048 GiB/s 1.5499 GiB/s]
+                 change:
+                        time:   [−5.3544% −3.6839% −1.7144%] (p = 0.00 < 0.05)
+                        thrpt:  [+1.7443% +3.8248% +5.6573%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  8 (8.00%) high mild
+  3 (3.00%) high severe
+record_decode_key_sizes/256
+                        time:   [137.45 ns 138.18 ns 138.99 ns]
+                        thrpt:  [1.7154 GiB/s 1.7255 GiB/s 1.7346 GiB/s]
+                 change:
+                        time:   [+31.962% +35.168% +37.950%] (p = 0.00 < 0.05)
+                        thrpt:  [−27.510% −26.018% −24.221%]
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+record_decode_key_sizes/512
+                        time:   [198.69 ns 200.46 ns 202.22 ns]
+                        thrpt:  [2.3580 GiB/s 2.3787 GiB/s 2.3999 GiB/s]
+                 change:
+                        time:   [+43.855% +44.995% +46.199%] (p = 0.00 < 0.05)
+                        thrpt:  [−31.600% −31.032% −30.486%]
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+record_decode_key_sizes/1024
+                        time:   [301.98 ns 311.07 ns 318.94 ns]
+                        thrpt:  [2.9901 GiB/s 3.0658 GiB/s 3.1580 GiB/s]
+                 change:
+                        time:   [+31.479% +34.200% +36.584%] (p = 0.00 < 0.05)
+                        thrpt:  [−26.785% −25.484% −23.942%]
+                        Performance has regressed.
+Found 16 outliers among 100 measurements (16.00%)
+  4 (4.00%) low severe
+  3 (3.00%) high mild
+  9 (9.00%) high severe
+
+multiple_records_encode/10
+                        time:   [1.8493 µs 1.8652 µs 1.8833 µs]
+                        thrpt:  [5.3100 Melem/s 5.3614 Melem/s 5.4075 Melem/s]
+                 change:
+                        time:   [+76.769% +83.003% +89.464%] (p = 0.00 < 0.05)
+                        thrpt:  [−47.220% −45.356% −43.429%]
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  7 (7.00%) high mild
+  2 (2.00%) high severe
+multiple_records_encode/50
+                        time:   [9.4653 µs 9.5169 µs 9.5743 µs]
+                        thrpt:  [5.2223 Melem/s 5.2538 Melem/s 5.2824 Melem/s]
+                 change:
+                        time:   [+165.16% +168.86% +172.19%] (p = 0.00 < 0.05)
+                        thrpt:  [−63.260% −62.806% −62.288%]
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  7 (7.00%) high mild
+  2 (2.00%) high severe
+multiple_records_encode/100
+                        time:   [21.660 µs 22.586 µs 23.356 µs]
+                        thrpt:  [4.2816 Melem/s 4.4275 Melem/s 4.6168 Melem/s]
+                 change:
+                        time:   [+153.22% +162.53% +172.42%] (p = 0.00 < 0.05)
+                        thrpt:  [−63.292% −61.909% −60.509%]
+                        Performance has regressed.
+multiple_records_encode/500
+                        time:   [111.46 µs 112.51 µs 113.72 µs]
+                        thrpt:  [4.3966 Melem/s 4.4439 Melem/s 4.4861 Melem/s]
+                 change:
+                        time:   [+84.932% +86.783% +88.758%] (p = 0.00 < 0.05)
+                        thrpt:  [−47.022% −46.462% −45.926%]
+                        Performance has regressed.
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/1000
+                        time:   [223.76 µs 230.32 µs 239.67 µs]
+                        thrpt:  [4.1724 Melem/s 4.3417 Melem/s 4.4691 Melem/s]
+                 change:
+                        time:   [+34.254% +36.658% +39.308%] (p = 0.00 < 0.05)
+                        thrpt:  [−28.217% −26.825% −25.514%]
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) high mild
+  7 (7.00%) high severe
+
+multiple_records_decode/10
+                        time:   [527.54 ns 537.35 ns 550.91 ns]
+                        thrpt:  [18.152 Melem/s 18.610 Melem/s 18.956 Melem/s]
+                 change:
+                        time:   [+4.4434% +6.8877% +9.8828%] (p = 0.00 < 0.05)
+                        thrpt:  [−8.9940% −6.4438% −4.2543%]
+                        Performance has regressed.
+Found 18 outliers among 100 measurements (18.00%)
+  6 (6.00%) high mild
+  12 (12.00%) high severe
+multiple_records_decode/50
+                        time:   [3.5453 µs 3.5499 µs 3.5549 µs]
+                        thrpt:  [14.065 Melem/s 14.085 Melem/s 14.103 Melem/s]
+                 change:
+                        time:   [+22.458% +29.631% +37.244%] (p = 0.00 < 0.05)
+                        thrpt:  [−27.137% −22.858% −18.340%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+multiple_records_decode/100
+                        time:   [8.2079 µs 8.4319 µs 8.6357 µs]
+                        thrpt:  [11.580 Melem/s 11.860 Melem/s 12.183 Melem/s]
+                 change:
+                        time:   [+100.47% +105.47% +110.87%] (p = 0.00 < 0.05)
+                        thrpt:  [−52.578% −51.332% −50.118%]
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+multiple_records_decode/500
+                        time:   [37.365 µs 38.151 µs 39.187 µs]
+                        thrpt:  [12.759 Melem/s 13.106 Melem/s 13.382 Melem/s]
+                 change:
+                        time:   [+49.881% +58.444% +67.176%] (p = 0.00 < 0.05)
+                        thrpt:  [−40.183% −36.886% −33.280%]
+                        Performance has regressed.
+multiple_records_decode/1000
+                        time:   [91.227 µs 91.399 µs 91.630 µs]
+                        thrpt:  [10.914 Melem/s 10.941 Melem/s 10.962 Melem/s]
+                 change:
+                        time:   [+118.04% +118.92% +119.82%] (p = 0.00 < 0.05)
+                        thrpt:  [−54.507% −54.322% −54.136%]
+                        Performance has regressed.
+Found 11 outliers among 100 measurements (11.00%)
+  2 (2.00%) high mild
+  9 (9.00%) high severe
+
+Running jemalloc benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [138.60 ns 139.80 ns 141.05 ns]
+                        change: [+57.397% +59.877% +62.044%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+header_decode           time:   [50.850 ns 51.429 ns 52.151 ns]
+                        change: [−23.181% −22.526% −21.887%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) low mild
+  4 (4.00%) high mild
+  6 (6.00%) high severe
+
+header_roundtrip        time:   [171.37 ns 173.97 ns 176.97 ns]
+                        change: [−30.039% −29.149% −28.271%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) high mild
+  7 (7.00%) high severe
+
+record_encode           time:   [112.70 ns 113.17 ns 113.83 ns]
+                        change: [−49.945% −49.583% −49.201%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  4 (4.00%) high mild
+  3 (3.00%) high severe
+
+record_decode           time:   [46.012 ns 46.265 ns 46.561 ns]
+                        change: [+0.2438% +1.0428% +1.8385%] (p = 0.01 < 0.05)
+                        Change within noise threshold.
+Found 9 outliers among 100 measurements (9.00%)
+  4 (4.00%) high mild
+  5 (5.00%) high severe
+
+record_roundtrip        time:   [161.26 ns 161.79 ns 162.41 ns]
+                        change: [−42.649% −42.469% −42.283%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 13 outliers among 100 measurements (13.00%)
+  2 (2.00%) high mild
+  11 (11.00%) high severe
+
+record_encode_key_sizes/32
+                        time:   [114.37 ns 115.55 ns 117.31 ns]
+                        thrpt:  [260.14 MiB/s 264.11 MiB/s 266.84 MiB/s]
+                 change:
+                        time:   [−45.348% −44.188% −42.949%] (p = 0.00 < 0.05)
+                        thrpt:  [+75.282% +79.172% +82.975%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+record_encode_key_sizes/64
+                        time:   [186.68 ns 186.74 ns 186.79 ns]
+                        thrpt:  [326.76 MiB/s 326.85 MiB/s 326.95 MiB/s]
+                 change:
+                        time:   [+3.9854% +4.2976% +4.5738%] (p = 0.00 < 0.05)
+                        thrpt:  [−4.3738% −4.1205% −3.8326%]
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+record_encode_key_sizes/128
+                        time:   [243.48 ns 244.82 ns 246.39 ns]
+                        thrpt:  [495.43 MiB/s 498.61 MiB/s 501.36 MiB/s]
+                 change:
+                        time:   [−7.6862% −5.4086% −3.1307%] (p = 0.00 < 0.05)
+                        thrpt:  [+3.2319% +5.7179% +8.3262%]
+                        Performance has improved.
+Found 14 outliers among 100 measurements (14.00%)
+  2 (2.00%) high mild
+  12 (12.00%) high severe
+record_encode_key_sizes/256
+                        time:   [156.91 ns 164.59 ns 174.79 ns]
+                        thrpt:  [1.3641 GiB/s 1.4485 GiB/s 1.5194 GiB/s]
+                 change:
+                        time:   [−51.014% −49.273% −47.291%] (p = 0.00 < 0.05)
+                        thrpt:  [+89.722% +97.135% +104.14%]
+                        Performance has improved.
+Found 14 outliers among 100 measurements (14.00%)
+  9 (9.00%) high mild
+  5 (5.00%) high severe
+record_encode_key_sizes/512
+                        time:   [157.42 ns 157.77 ns 158.19 ns]
+                        thrpt:  [3.0143 GiB/s 3.0224 GiB/s 3.0291 GiB/s]
+                 change:
+                        time:   [−59.145% −57.787% −56.302%] (p = 0.00 < 0.05)
+                        thrpt:  [+128.84% +136.89% +144.77%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [176.89 ns 183.40 ns 191.09 ns]
+                        thrpt:  [4.9906 GiB/s 5.2000 GiB/s 5.3913 GiB/s]
+                 change:
+                        time:   [−50.853% −49.742% −48.346%] (p = 0.00 < 0.05)
+                        thrpt:  [+93.594% +98.975% +103.47%]
+                        Performance has improved.
+Found 17 outliers among 100 measurements (17.00%)
+  4 (4.00%) high mild
+  13 (13.00%) high severe
+
+record_decode_key_sizes/32
+                        time:   [64.867 ns 70.205 ns 76.191 ns]
+                        thrpt:  [400.54 MiB/s 434.69 MiB/s 470.46 MiB/s]
+                 change:
+                        time:   [+57.834% +65.207% +71.481%] (p = 0.00 < 0.05)
+                        thrpt:  [−41.685% −39.470% −36.642%]
+                        Performance has regressed.
+Found 33 outliers among 100 measurements (33.00%)
+  11 (11.00%) low severe
+  5 (5.00%) low mild
+  3 (3.00%) high mild
+  14 (14.00%) high severe
+record_decode_key_sizes/64
+                        time:   [58.193 ns 59.202 ns 60.356 ns]
+                        thrpt:  [1011.3 MiB/s 1.0068 GiB/s 1.0243 GiB/s]
+                 change:
+                        time:   [+26.942% +33.301% +38.670%] (p = 0.00 < 0.05)
+                        thrpt:  [−27.886% −24.982% −21.224%]
+                        Performance has regressed.
+record_decode_key_sizes/128
+                        time:   [106.24 ns 110.83 ns 114.85 ns]
+                        thrpt:  [1.0380 GiB/s 1.0756 GiB/s 1.1221 GiB/s]
+                 change:
+                        time:   [+38.363% +44.559% +50.336%] (p = 0.00 < 0.05)
+                        thrpt:  [−33.482% −30.824% −27.727%]
+                        Performance has regressed.
+record_decode_key_sizes/256
+                        time:   [85.501 ns 85.655 ns 85.799 ns]
+                        thrpt:  [2.7788 GiB/s 2.7835 GiB/s 2.7885 GiB/s]
+                 change:
+                        time:   [−37.693% −37.354% −37.031%] (p = 0.00 < 0.05)
+                        thrpt:  [+58.808% +59.628% +60.495%]
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) low mild
+record_decode_key_sizes/512
+                        time:   [135.64 ns 136.60 ns 137.74 ns]
+                        thrpt:  [3.4620 GiB/s 3.4908 GiB/s 3.5153 GiB/s]
+                 change:
+                        time:   [−30.538% −29.739% −28.883%] (p = 0.00 < 0.05)
+                        thrpt:  [+40.613% +42.326% +43.963%]
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  2 (2.00%) high mild
+  5 (5.00%) high severe
+record_decode_key_sizes/1024
+                        time:   [274.60 ns 282.84 ns 290.06 ns]
+                        thrpt:  [3.2878 GiB/s 3.3718 GiB/s 3.4730 GiB/s]
+                 change:
+                        time:   [−11.411% −9.1777% −6.9457%] (p = 0.00 < 0.05)
+                        thrpt:  [+7.4642% +10.105% +12.881%]
+                        Performance has improved.
+Found 24 outliers among 100 measurements (24.00%)
+  21 (21.00%) low severe
+  3 (3.00%) low mild
+
+multiple_records_encode/10
+                        time:   [1.2319 µs 1.2431 µs 1.2569 µs]
+                        thrpt:  [7.9559 Melem/s 8.0446 Melem/s 8.1177 Melem/s]
+                 change:
+                        time:   [−26.263% −23.279% −19.937%] (p = 0.00 < 0.05)
+                        thrpt:  [+24.901% +30.342% +35.617%]
+                        Performance has improved.
+multiple_records_encode/50
+                        time:   [5.9314 µs 5.9709 µs 6.0152 µs]
+                        thrpt:  [8.3123 Melem/s 8.3740 Melem/s 8.4297 Melem/s]
+                 change:
+                        time:   [−38.178% −37.663% −37.150%] (p = 0.00 < 0.05)
+                        thrpt:  [+59.110% +60.418% +61.754%]
+                        Performance has improved.
+Found 9 outliers among 100 measurements (9.00%)
+  7 (7.00%) high mild
+  2 (2.00%) high severe
+multiple_records_encode/100
+                        time:   [19.064 µs 19.139 µs 19.220 µs]
+                        thrpt:  [5.2029 Melem/s 5.2251 Melem/s 5.2455 Melem/s]
+                 change:
+                        time:   [−7.9536% −5.0845% −2.1669%] (p = 0.00 < 0.05)
+                        thrpt:  [+2.2149% +5.3569% +8.6409%]
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+multiple_records_encode/500
+                        time:   [64.218 µs 65.630 µs 67.296 µs]
+                        thrpt:  [7.4299 Melem/s 7.6185 Melem/s 7.7860 Melem/s]
+                 change:
+                        time:   [−43.405% −42.533% −41.564%] (p = 0.00 < 0.05)
+                        thrpt:  [+71.128% +74.014% +76.695%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  6 (6.00%) high mild
+  2 (2.00%) high severe
+multiple_records_encode/1000
+                        time:   [130.19 µs 131.03 µs 131.97 µs]
+                        thrpt:  [7.5777 Melem/s 7.6320 Melem/s 7.6808 Melem/s]
+                 change:
+                        time:   [−42.912% −41.747% −40.731%] (p = 0.00 < 0.05)
+                        thrpt:  [+68.721% +71.666% +75.167%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+
+multiple_records_decode/10
+                        time:   [453.12 ns 458.77 ns 465.14 ns]
+                        thrpt:  [21.499 Melem/s 21.798 Melem/s 22.069 Melem/s]
+                 change:
+                        time:   [−18.531% −16.401% −14.476%] (p = 0.00 < 0.05)
+                        thrpt:  [+16.926% +19.619% +22.746%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  3 (3.00%) high mild
+  8 (8.00%) high severe
+multiple_records_decode/50
+                        time:   [2.1281 µs 2.1410 µs 2.1566 µs]
+                        thrpt:  [23.184 Melem/s 23.354 Melem/s 23.496 Melem/s]
+                 change:
+                        time:   [−40.093% −39.879% −39.636%] (p = 0.00 < 0.05)
+                        thrpt:  [+65.663% +66.332% +66.927%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  4 (4.00%) high mild
+  7 (7.00%) high severe
+multiple_records_decode/100
+                        time:   [6.1592 µs 6.1660 µs 6.1765 µs]
+                        thrpt:  [16.190 Melem/s 16.218 Melem/s 16.236 Melem/s]
+                 change:
+                        time:   [−30.320% −28.577% −26.823%] (p = 0.00 < 0.05)
+                        thrpt:  [+36.655% +40.010% +43.513%]
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
+multiple_records_decode/500
+                        time:   [24.758 µs 24.795 µs 24.834 µs]
+                        thrpt:  [20.133 Melem/s 20.165 Melem/s 20.195 Melem/s]
+                 change:
+                        time:   [−48.453% −45.952% −43.320%] (p = 0.00 < 0.05)
+                        thrpt:  [+76.431% +85.019% +93.996%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+multiple_records_decode/1000
+                        time:   [51.168 µs 51.422 µs 51.706 µs]
+                        thrpt:  [19.340 Melem/s 19.447 Melem/s 19.544 Melem/s]
+                 change:
+                        time:   [−44.108% −43.882% −43.631%] (p = 0.00 < 0.05)
+                        thrpt:  [+77.401% +78.195% +78.917%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+
+Running mimalloc benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [80.671 ns 84.856 ns 88.900 ns]
+                        change: [−47.559% −45.137% −42.953%] (p = 0.00 < 0.05)
+                        Performance has improved.
+
+header_decode           time:   [42.567 ns 44.373 ns 46.297 ns]
+                        change: [−18.557% −17.080% −15.243%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 14 outliers among 100 measurements (14.00%)
+  5 (5.00%) high mild
+  9 (9.00%) high severe
+
+header_roundtrip        time:   [116.92 ns 117.33 ns 117.77 ns]
+                        change: [−32.502% −31.777% −31.114%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 13 outliers among 100 measurements (13.00%)
+  7 (7.00%) high mild
+  6 (6.00%) high severe
+
+record_encode           time:   [67.476 ns 67.805 ns 68.169 ns]
+                        change: [−40.686% −40.272% −39.900%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high mild
+
+record_decode           time:   [59.202 ns 60.765 ns 62.033 ns]
+                        change: [+19.677% +23.029% +26.625%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
+record_roundtrip        time:   [113.33 ns 114.01 ns 114.71 ns]
+                        change: [−30.364% −30.066% −29.758%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 12 outliers among 100 measurements (12.00%)
+  7 (7.00%) high mild
+  5 (5.00%) high severe
+
+record_encode_key_sizes/32
+                        time:   [73.704 ns 77.532 ns 81.250 ns]
+                        thrpt:  [375.60 MiB/s 393.61 MiB/s 414.06 MiB/s]
+                 change:
+                        time:   [−37.845% −36.327% −34.755%] (p = 0.00 < 0.05)
+                        thrpt:  [+53.269% +57.053% +60.887%]
+                        Performance has improved.
+Found 15 outliers among 100 measurements (15.00%)
+  2 (2.00%) high mild
+  13 (13.00%) high severe
+record_encode_key_sizes/64
+                        time:   [97.329 ns 97.469 ns 97.655 ns]
+                        thrpt:  [625.01 MiB/s 626.20 MiB/s 627.10 MiB/s]
+                 change:
+                        time:   [−47.822% −47.721% −47.598%] (p = 0.00 < 0.05)
+                        thrpt:  [+90.833% +91.282% +91.652%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+record_encode_key_sizes/128
+                        time:   [91.874 ns 92.105 ns 92.370 ns]
+                        thrpt:  [1.2906 GiB/s 1.2943 GiB/s 1.2975 GiB/s]
+                 change:
+                        time:   [−62.425% −62.257% −62.109%] (p = 0.00 < 0.05)
+                        thrpt:  [+163.91% +164.95% +166.14%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+record_encode_key_sizes/256
+                        time:   [93.154 ns 93.950 ns 94.770 ns]
+                        thrpt:  [2.5158 GiB/s 2.5377 GiB/s 2.5594 GiB/s]
+                 change:
+                        time:   [−44.628% −42.259% −40.282%] (p = 0.00 < 0.05)
+                        thrpt:  [+67.454% +73.187% +80.598%]
+                        Performance has improved.
+Found 15 outliers among 100 measurements (15.00%)
+  2 (2.00%) low mild
+  4 (4.00%) high mild
+  9 (9.00%) high severe
+record_encode_key_sizes/512
+                        time:   [133.75 ns 140.61 ns 148.42 ns]
+                        thrpt:  [3.2129 GiB/s 3.3911 GiB/s 3.5651 GiB/s]
+                 change:
+                        time:   [−4.7734% −2.2906% +0.2043%] (p = 0.08 > 0.05)
+                        thrpt:  [−0.2038% +2.3443% +5.0127%]
+                        No change in performance detected.
+Found 35 outliers among 100 measurements (35.00%)
+  19 (19.00%) low severe
+  9 (9.00%) high mild
+  7 (7.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [121.86 ns 123.15 ns 124.42 ns]
+                        thrpt:  [7.6648 GiB/s 7.7441 GiB/s 7.8262 GiB/s]
+                 change:
+                        time:   [−32.545% −30.543% −28.745%] (p = 0.00 < 0.05)
+                        thrpt:  [+40.341% +43.974% +48.247%]
+                        Performance has improved.
+
+record_decode_key_sizes/32
+                        time:   [43.039 ns 43.399 ns 43.796 ns]
+                        thrpt:  [696.82 MiB/s 703.19 MiB/s 709.06 MiB/s]
+                 change:
+                        time:   [−43.288% −40.976% −38.527%] (p = 0.00 < 0.05)
+                        thrpt:  [+62.673% +69.422% +76.329%]
+                        Performance has improved.
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) high mild
+  7 (7.00%) high severe
+record_decode_key_sizes/64
+                        time:   [54.370 ns 55.428 ns 56.748 ns]
+                        thrpt:  [1.0503 GiB/s 1.0754 GiB/s 1.0963 GiB/s]
+                 change:
+                        time:   [−12.924% −7.3018% −1.2973%] (p = 0.02 < 0.05)
+                        thrpt:  [+1.3144% +7.8769% +14.842%]
+                        Performance has improved.
+record_decode_key_sizes/128
+                        time:   [64.230 ns 65.179 ns 66.296 ns]
+                        thrpt:  [1.7981 GiB/s 1.8290 GiB/s 1.8560 GiB/s]
+                 change:
+                        time:   [−41.468% −39.051% −36.379%] (p = 0.00 < 0.05)
+                        thrpt:  [+57.180% +64.071% +70.846%]
+                        Performance has improved.
+record_decode_key_sizes/256
+                        time:   [86.655 ns 88.323 ns 90.407 ns]
+                        thrpt:  [2.6372 GiB/s 2.6994 GiB/s 2.7513 GiB/s]
+                 change:
+                        time:   [+1.2786% +2.6503% +4.2826%] (p = 0.00 < 0.05)
+                        thrpt:  [−4.1068% −2.5819% −1.2624%]
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  6 (6.00%) high severe
+record_decode_key_sizes/512
+                        time:   [128.04 ns 128.39 ns 128.76 ns]
+                        thrpt:  [3.7033 GiB/s 3.7141 GiB/s 3.7243 GiB/s]
+                 change:
+                        time:   [−8.3511% −7.3123% −6.3795%] (p = 0.00 < 0.05)
+                        thrpt:  [+6.8142% +7.8891% +9.1121%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  8 (8.00%) high mild
+record_decode_key_sizes/1024
+                        time:   [292.46 ns 293.55 ns 294.72 ns]
+                        thrpt:  [3.2359 GiB/s 3.2488 GiB/s 3.2609 GiB/s]
+                 change:
+                        time:   [+0.7912% +2.9758% +5.3908%] (p = 0.01 < 0.05)
+                        thrpt:  [−5.1151% −2.8898% −0.7850%]
+                        Change within noise threshold.
+
+multiple_records_encode/10
+                        time:   [719.23 ns 720.28 ns 721.36 ns]
+                        thrpt:  [13.863 Melem/s 13.884 Melem/s 13.904 Melem/s]
+                 change:
+                        time:   [−51.276% −49.151% −46.938%] (p = 0.00 < 0.05)
+                        thrpt:  [+88.458% +96.660% +105.24%]
+                        Performance has improved.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
+multiple_records_encode/50
+                        time:   [3.3690 µs 3.3754 µs 3.3823 µs]
+                        thrpt:  [14.783 Melem/s 14.813 Melem/s 14.841 Melem/s]
+                 change:
+                        time:   [−43.536% −43.192% −42.885%] (p = 0.00 < 0.05)
+                        thrpt:  [+75.084% +76.031% +77.104%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/100
+                        time:   [6.6681 µs 6.6975 µs 6.7356 µs]
+                        thrpt:  [14.846 Melem/s 14.931 Melem/s 14.997 Melem/s]
+                 change:
+                        time:   [−65.314% −65.135% −64.965%] (p = 0.00 < 0.05)
+                        thrpt:  [+185.43% +186.82% +188.30%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/500
+                        time:   [33.591 µs 33.629 µs 33.671 µs]
+                        thrpt:  [14.849 Melem/s 14.868 Melem/s 14.885 Melem/s]
+                 change:
+                        time:   [−48.157% −47.345% −46.621%] (p = 0.00 < 0.05)
+                        thrpt:  [+87.340% +89.916% +92.890%]
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  3 (3.00%) low mild
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/1000
+                        time:   [68.017 µs 68.145 µs 68.284 µs]
+                        thrpt:  [14.645 Melem/s 14.675 Melem/s 14.702 Melem/s]
+                 change:
+                        time:   [−48.219% −47.689% −47.210%] (p = 0.00 < 0.05)
+                        thrpt:  [+89.430% +91.165% +93.120%]
+                        Performance has improved.
+Found 9 outliers among 100 measurements (9.00%)
+  7 (7.00%) high mild
+  2 (2.00%) high severe
+
+multiple_records_decode/10
+                        time:   [399.71 ns 400.96 ns 402.34 ns]
+                        thrpt:  [24.855 Melem/s 24.940 Melem/s 25.018 Melem/s]
+                 change:
+                        time:   [−12.107% −11.438% −10.821%] (p = 0.00 < 0.05)
+                        thrpt:  [+12.134% +12.915% +13.775%]
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+multiple_records_decode/50
+                        time:   [1.9350 µs 1.9452 µs 1.9577 µs]
+                        thrpt:  [25.541 Melem/s 25.704 Melem/s 25.840 Melem/s]
+                 change:
+                        time:   [−9.2245% −8.6249% −7.9146%] (p = 0.00 < 0.05)
+                        thrpt:  [+8.5949% +9.4390% +10.162%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+multiple_records_decode/100
+                        time:   [3.8116 µs 3.8265 µs 3.8479 µs]
+                        thrpt:  [25.988 Melem/s 26.133 Melem/s 26.236 Melem/s]
+                 change:
+                        time:   [−38.070% −37.898% −37.741%] (p = 0.00 < 0.05)
+                        thrpt:  [+60.619% +61.026% +61.472%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+multiple_records_decode/500
+                        time:   [22.316 µs 22.859 µs 23.523 µs]
+                        thrpt:  [21.255 Melem/s 21.874 Melem/s 22.406 Melem/s]
+                 change:
+                        time:   [−2.5536% +0.2446% +3.3081%] (p = 0.87 > 0.05)
+                        thrpt:  [−3.2022% −0.2440% +2.6205%]
+                        No change in performance detected.
+multiple_records_decode/1000
+                        time:   [39.602 µs 39.722 µs 39.880 µs]
+                        thrpt:  [25.075 Melem/s 25.175 Melem/s 25.251 Melem/s]
+                 change:
+                        time:   [−23.200% −22.863% −22.473%] (p = 0.00 < 0.05)
+                        thrpt:  [+28.987% +29.640% +30.208%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) high mild
+  4 (4.00%) high severe
+
+Running mimalloc secure benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [201.04 ns 205.16 ns 210.61 ns]
+                        change: [+150.42% +160.66% +171.43%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 19 outliers among 100 measurements (19.00%)
+  19 (19.00%) high severe
+
+header_decode           time:   [55.432 ns 55.689 ns 55.983 ns]
+                        change: [+28.757% +31.344% +33.668%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 16 outliers among 100 measurements (16.00%)
+  10 (10.00%) high mild
+  6 (6.00%) high severe
+
+header_roundtrip        time:   [179.61 ns 180.22 ns 180.93 ns]
+                        change: [+53.353% +54.115% +54.834%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 13 outliers among 100 measurements (13.00%)
+  10 (10.00%) high mild
+  3 (3.00%) high severe
+
+record_encode           time:   [200.18 ns 201.06 ns 202.05 ns]
+                        change: [+194.04% +195.47% +196.87%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  8 (8.00%) high severe
+
+record_decode           time:   [64.210 ns 64.957 ns 65.847 ns]
+                        change: [+11.767% +15.268% +19.145%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 13 outliers among 100 measurements (13.00%)
+  11 (11.00%) high mild
+  2 (2.00%) high severe
+
+record_roundtrip        time:   [288.26 ns 291.01 ns 294.32 ns]
+                        change: [+158.22% +163.32% +168.97%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) high mild
+  10 (10.00%) high severe
+
+record_encode_key_sizes/32
+                        time:   [125.64 ns 126.76 ns 128.23 ns]
+                        thrpt:  [237.99 MiB/s 240.76 MiB/s 242.89 MiB/s]
+                 change:
+                        time:   [+73.026% +78.313% +83.994%] (p = 0.00 < 0.05)
+                        thrpt:  [−45.650% −43.919% −42.205%]
+                        Performance has regressed.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+record_encode_key_sizes/64
+                        time:   [120.94 ns 121.82 ns 123.08 ns]
+                        thrpt:  [495.88 MiB/s 501.04 MiB/s 504.68 MiB/s]
+                 change:
+                        time:   [+23.788% +24.484% +25.427%] (p = 0.00 < 0.05)
+                        thrpt:  [−20.273% −19.668% −19.217%]
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) high mild
+  7 (7.00%) high severe
+record_encode_key_sizes/128
+                        time:   [164.87 ns 166.80 ns 169.06 ns]
+                        thrpt:  [722.03 MiB/s 731.84 MiB/s 740.41 MiB/s]
+                 change:
+                        time:   [+82.016% +83.677% +85.395%] (p = 0.00 < 0.05)
+                        thrpt:  [−46.061% −45.557% −45.060%]
+                        Performance has regressed.
+record_encode_key_sizes/256
+                        time:   [162.21 ns 163.82 ns 165.76 ns]
+                        thrpt:  [1.4383 GiB/s 1.4554 GiB/s 1.4698 GiB/s]
+                 change:
+                        time:   [+73.576% +74.677% +75.682%] (p = 0.00 < 0.05)
+                        thrpt:  [−43.079% −42.751% −42.388%]
+                        Performance has regressed.
+Found 11 outliers among 100 measurements (11.00%)
+  5 (5.00%) high mild
+  6 (6.00%) high severe
+record_encode_key_sizes/512
+                        time:   [187.43 ns 190.37 ns 193.85 ns]
+                        thrpt:  [2.4598 GiB/s 2.5048 GiB/s 2.5441 GiB/s]
+                 change:
+                        time:   [+17.091% +20.255% +23.855%] (p = 0.00 < 0.05)
+                        thrpt:  [−19.260% −16.843% −14.596%]
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  6 (6.00%) high mild
+  3 (3.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [221.01 ns 223.67 ns 226.46 ns]
+                        thrpt:  [4.2113 GiB/s 4.2638 GiB/s 4.3152 GiB/s]
+                 change:
+                        time:   [+75.640% +77.631% +79.546%] (p = 0.00 < 0.05)
+                        thrpt:  [−44.304% −43.704% −43.065%]
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+record_decode_key_sizes/32
+                        time:   [61.158 ns 61.250 ns 61.342 ns]
+                        thrpt:  [497.50 MiB/s 498.24 MiB/s 498.99 MiB/s]
+                 change:
+                        time:   [+40.427% +41.337% +42.177%] (p = 0.00 < 0.05)
+                        thrpt:  [−29.665% −29.247% −28.788%]
+                        Performance has regressed.
+record_decode_key_sizes/64
+                        time:   [72.222 ns 72.340 ns 72.481 ns]
+                        thrpt:  [842.08 MiB/s 843.72 MiB/s 845.11 MiB/s]
+                 change:
+                        time:   [+7.3463% +11.689% +16.350%] (p = 0.00 < 0.05)
+                        thrpt:  [−14.052% −10.465% −6.8436%]
+                        Performance has regressed.
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+record_decode_key_sizes/128
+                        time:   [115.07 ns 115.54 ns 116.05 ns]
+                        thrpt:  [1.0272 GiB/s 1.0317 GiB/s 1.0360 GiB/s]
+                 change:
+                        time:   [+66.239% +68.950% +71.711%] (p = 0.00 < 0.05)
+                        thrpt:  [−41.763% −40.811% −39.846%]
+                        Performance has regressed.
+record_decode_key_sizes/256
+                        time:   [102.94 ns 103.31 ns 103.85 ns]
+                        thrpt:  [2.2957 GiB/s 2.3078 GiB/s 2.3162 GiB/s]
+                 change:
+                        time:   [+15.928% +17.708% +19.250%] (p = 0.00 < 0.05)
+                        thrpt:  [−16.143% −15.044% −13.740%]
+                        Performance has regressed.
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+record_decode_key_sizes/512
+                        time:   [183.79 ns 191.59 ns 198.21 ns]
+                        thrpt:  [2.4057 GiB/s 2.4888 GiB/s 2.5945 GiB/s]
+                 change:
+                        time:   [+29.535% +33.999% +38.255%] (p = 0.00 < 0.05)
+                        thrpt:  [−27.670% −25.373% −22.801%]
+                        Performance has regressed.
+record_decode_key_sizes/1024
+                        time:   [240.77 ns 241.03 ns 241.29 ns]
+                        thrpt:  [3.9524 GiB/s 3.9566 GiB/s 3.9609 GiB/s]
+                 change:
+                        time:   [−18.704% −18.392% −18.084%] (p = 0.00 < 0.05)
+                        thrpt:  [+22.077% +22.537% +23.008%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) low mild
+  1 (1.00%) high mild
+
+multiple_records_encode/10
+                        time:   [1.2789 µs 1.2975 µs 1.3212 µs]
+                        thrpt:  [7.5687 Melem/s 7.7071 Melem/s 7.8191 Melem/s]
+                 change:
+                        time:   [+103.92% +114.59% +125.31%] (p = 0.00 < 0.05)
+                        thrpt:  [−55.617% −53.398% −50.962%]
+                        Performance has regressed.
+multiple_records_encode/50
+                        time:   [6.0781 µs 6.0974 µs 6.1162 µs]
+                        thrpt:  [8.1750 Melem/s 8.2002 Melem/s 8.2263 Melem/s]
+                 change:
+                        time:   [+80.283% +80.870% +81.467%] (p = 0.00 < 0.05)
+                        thrpt:  [−44.894% −44.712% −44.532%]
+                        Performance has regressed.
+multiple_records_encode/100
+                        time:   [12.142 µs 12.174 µs 12.207 µs]
+                        thrpt:  [8.1923 Melem/s 8.2139 Melem/s 8.2360 Melem/s]
+                 change:
+                        time:   [+81.116% +81.903% +82.626%] (p = 0.00 < 0.05)
+                        thrpt:  [−45.243% −45.026% −44.787%]
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+multiple_records_encode/500
+                        time:   [62.466 µs 62.617 µs 62.783 µs]
+                        thrpt:  [7.9640 Melem/s 7.9851 Melem/s 8.0043 Melem/s]
+                 change:
+                        time:   [+86.161% +87.002% +87.715%] (p = 0.00 < 0.05)
+                        thrpt:  [−46.728% −46.525% −46.283%]
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+multiple_records_encode/1000
+                        time:   [136.62 µs 137.98 µs 139.64 µs]
+                        thrpt:  [7.1611 Melem/s 7.2476 Melem/s 7.3194 Melem/s]
+                 change:
+                        time:   [+106.62% +112.00% +118.17%] (p = 0.00 < 0.05)
+                        thrpt:  [−54.164% −52.830% −51.602%]
+                        Performance has regressed.
+Found 13 outliers among 100 measurements (13.00%)
+  3 (3.00%) high mild
+  10 (10.00%) high severe
+
+multiple_records_decode/10
+                        time:   [544.88 ns 547.55 ns 550.79 ns]
+                        thrpt:  [18.156 Melem/s 18.263 Melem/s 18.353 Melem/s]
+                 change:
+                        time:   [+35.329% +36.024% +36.717%] (p = 0.00 < 0.05)
+                        thrpt:  [−26.856% −26.484% −26.106%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+multiple_records_decode/50
+                        time:   [2.5363 µs 2.5482 µs 2.5616 µs]
+                        thrpt:  [19.519 Melem/s 19.621 Melem/s 19.714 Melem/s]
+                 change:
+                        time:   [+30.068% +31.133% +32.151%] (p = 0.00 < 0.05)
+                        thrpt:  [−24.329% −23.742% −23.117%]
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
+multiple_records_decode/100
+                        time:   [5.0338 µs 5.0406 µs 5.0481 µs]
+                        thrpt:  [19.809 Melem/s 19.839 Melem/s 19.866 Melem/s]
+                 change:
+                        time:   [+31.852% +32.391% +32.939%] (p = 0.00 < 0.05)
+                        thrpt:  [−24.777% −24.466% −24.157%]
+                        Performance has regressed.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+multiple_records_decode/500
+                        time:   [25.282 µs 25.386 µs 25.521 µs]
+                        thrpt:  [19.592 Melem/s 19.696 Melem/s 19.777 Melem/s]
+                 change:
+                        time:   [−0.4277% +2.6101% +5.7361%] (p = 0.09 > 0.05)
+                        thrpt:  [−5.4249% −2.5437% +0.4295%]
+                        No change in performance detected.
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+multiple_records_decode/1000
+                        time:   [64.374 µs 64.746 µs 65.167 µs]
+                        thrpt:  [15.345 Melem/s 15.445 Melem/s 15.534 Melem/s]
+                 change:
+                        time:   [+61.667% +63.176% +64.976%] (p = 0.00 < 0.05)
+                        thrpt:  [−39.385% −38.716% −38.145%]
+                        Performance has regressed.
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) low mild
+  2 (2.00%) high mild
+  8 (8.00%) high severe
+
+Running mimalloc v3 benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [67.317 ns 67.712 ns 68.266 ns]
+                        change: [−66.697% −66.283% −65.881%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 12 outliers among 100 measurements (12.00%)
+  2 (2.00%) low mild
+  1 (1.00%) high mild
+  9 (9.00%) high severe
+
+header_decode           time:   [40.935 ns 41.029 ns 41.125 ns]
+                        change: [−26.663% −26.337% −26.019%] (p = 0.00 < 0.05)
+                        Performance has improved.
+
+header_roundtrip        time:   [112.12 ns 113.19 ns 114.45 ns]
+                        change: [−38.679% −38.208% −37.674%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  4 (4.00%) high mild
+  1 (1.00%) high severe
+
+record_encode           time:   [75.589 ns 75.784 ns 76.048 ns]
+                        change: [−62.312% −62.169% −62.024%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+
+record_decode           time:   [42.775 ns 42.992 ns 43.235 ns]
+                        change: [−31.843% −29.048% −26.486%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 19 outliers among 100 measurements (19.00%)
+  2 (2.00%) high mild
+  17 (17.00%) high severe
+
+record_roundtrip        time:   [121.39 ns 121.73 ns 122.14 ns]
+                        change: [−59.952% −59.094% −58.311%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) low mild
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+
+record_encode_key_sizes/32
+                        time:   [98.851 ns 99.397 ns 99.976 ns]
+                        thrpt:  [305.25 MiB/s 307.03 MiB/s 308.72 MiB/s]
+                 change:
+                        time:   [−25.196% −23.782% −22.558%] (p = 0.00 < 0.05)
+                        thrpt:  [+29.129% +31.202% +33.683%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) low severe
+  3 (3.00%) high mild
+  7 (7.00%) high severe
+record_encode_key_sizes/64
+                        time:   [75.022 ns 75.657 ns 76.504 ns]
+                        thrpt:  [797.80 MiB/s 806.73 MiB/s 813.56 MiB/s]
+                 change:
+                        time:   [−38.435% −37.905% −37.384%] (p = 0.00 < 0.05)
+                        thrpt:  [+59.704% +61.044% +62.431%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+record_encode_key_sizes/128
+                        time:   [100.43 ns 101.05 ns 101.83 ns]
+                        thrpt:  [1.1707 GiB/s 1.1797 GiB/s 1.1869 GiB/s]
+                 change:
+                        time:   [−40.591% −39.918% −39.210%] (p = 0.00 < 0.05)
+                        thrpt:  [+64.500% +66.439% +68.324%]
+                        Performance has improved.
+Found 14 outliers among 100 measurements (14.00%)
+  1 (1.00%) high mild
+  13 (13.00%) high severe
+record_encode_key_sizes/256
+                        time:   [118.50 ns 118.73 ns 118.94 ns]
+                        thrpt:  [2.0046 GiB/s 2.0081 GiB/s 2.0120 GiB/s]
+                 change:
+                        time:   [−27.305% −26.936% −26.626%] (p = 0.00 < 0.05)
+                        thrpt:  [+36.289% +36.866% +37.561%]
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) low severe
+  1 (1.00%) low mild
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+record_encode_key_sizes/512
+                        time:   [119.85 ns 120.11 ns 120.43 ns]
+                        thrpt:  [3.9594 GiB/s 3.9701 GiB/s 3.9787 GiB/s]
+                 change:
+                        time:   [−36.042% −35.332% −34.741%] (p = 0.00 < 0.05)
+                        thrpt:  [+53.236% +54.636% +56.353%]
+                        Performance has improved.
+Found 13 outliers among 100 measurements (13.00%)
+  8 (8.00%) high mild
+  5 (5.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [130.85 ns 131.95 ns 133.23 ns]
+                        thrpt:  [7.1580 GiB/s 7.2276 GiB/s 7.2885 GiB/s]
+                 change:
+                        time:   [−41.401% −40.793% −40.201%] (p = 0.00 < 0.05)
+                        thrpt:  [+67.228% +68.898% +70.653%]
+                        Performance has improved.
+Found 14 outliers among 100 measurements (14.00%)
+  6 (6.00%) high mild
+  8 (8.00%) high severe
+
+record_decode_key_sizes/32
+                        time:   [57.777 ns 59.484 ns 60.811 ns]
+                        thrpt:  [501.84 MiB/s 513.04 MiB/s 528.20 MiB/s]
+                 change:
+                        time:   [−20.286% −16.608% −12.986%] (p = 0.00 < 0.05)
+                        thrpt:  [+14.925% +19.916% +25.448%]
+                        Performance has improved.
+record_decode_key_sizes/64
+                        time:   [53.876 ns 54.796 ns 55.814 ns]
+                        thrpt:  [1.0679 GiB/s 1.0877 GiB/s 1.1063 GiB/s]
+                 change:
+                        time:   [−25.471% −24.529% −23.592%] (p = 0.00 < 0.05)
+                        thrpt:  [+30.877% +32.501% +34.176%]
+                        Performance has improved.
+record_decode_key_sizes/128
+                        time:   [65.166 ns 66.546 ns 68.359 ns]
+                        thrpt:  [1.7439 GiB/s 1.7914 GiB/s 1.8293 GiB/s]
+                 change:
+                        time:   [−34.433% −31.484% −28.599%] (p = 0.00 < 0.05)
+                        thrpt:  [+40.054% +45.951% +52.516%]
+                        Performance has improved.
+record_decode_key_sizes/256
+                        time:   [91.845 ns 94.871 ns 98.050 ns]
+                        thrpt:  [2.4316 GiB/s 2.5131 GiB/s 2.5959 GiB/s]
+                 change:
+                        time:   [−12.765% −10.617% −8.3613%] (p = 0.00 < 0.05)
+                        thrpt:  [+9.1242% +11.878% +14.633%]
+                        Performance has improved.
+Found 9 outliers among 100 measurements (9.00%)
+  6 (6.00%) high mild
+  3 (3.00%) high severe
+record_decode_key_sizes/512
+                        time:   [143.82 ns 149.01 ns 154.95 ns]
+                        thrpt:  [3.0774 GiB/s 3.2001 GiB/s 3.3156 GiB/s]
+                 change:
+                        time:   [−13.853% −8.8947% −4.1168%] (p = 0.00 < 0.05)
+                        thrpt:  [+4.2935% +9.7630% +16.081%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  7 (7.00%) high mild
+  1 (1.00%) high severe
+record_decode_key_sizes/1024
+                        time:   [238.22 ns 245.56 ns 253.30 ns]
+                        thrpt:  [3.7650 GiB/s 3.8837 GiB/s 4.0033 GiB/s]
+                 change:
+                        time:   [−3.0171% −1.3220% +0.4274%] (p = 0.13 > 0.05)
+                        thrpt:  [−0.4256% +1.3397% +3.1110%]
+                        No change in performance detected.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+multiple_records_encode/10
+                        time:   [962.91 ns 1.0011 µs 1.0401 µs]
+                        thrpt:  [9.6141 Melem/s 9.9886 Melem/s 10.385 Melem/s]
+                 change:
+                        time:   [−36.473% −33.240% −29.748%] (p = 0.00 < 0.05)
+                        thrpt:  [+42.345% +49.790% +57.413%]
+                        Performance has improved.
+Found 15 outliers among 100 measurements (15.00%)
+  9 (9.00%) low severe
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+multiple_records_encode/50
+                        time:   [3.9144 µs 3.9545 µs 3.9984 µs]
+                        thrpt:  [12.505 Melem/s 12.644 Melem/s 12.773 Melem/s]
+                 change:
+                        time:   [−34.903% −33.949% −32.849%] (p = 0.00 < 0.05)
+                        thrpt:  [+48.918% +51.398% +53.617%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+multiple_records_encode/100
+                        time:   [7.7203 µs 7.8077 µs 7.9036 µs]
+                        thrpt:  [12.653 Melem/s 12.808 Melem/s 12.953 Melem/s]
+                 change:
+                        time:   [−35.055% −34.447% −33.856%] (p = 0.00 < 0.05)
+                        thrpt:  [+51.186% +52.549% +53.977%]
+                        Performance has improved.
+multiple_records_encode/500
+                        time:   [39.622 µs 40.160 µs 40.728 µs]
+                        thrpt:  [12.277 Melem/s 12.450 Melem/s 12.619 Melem/s]
+                 change:
+                        time:   [−37.995% −37.549% −37.052%] (p = 0.00 < 0.05)
+                        thrpt:  [+58.862% +60.125% +61.277%]
+                        Performance has improved.
+Found 9 outliers among 100 measurements (9.00%)
+  6 (6.00%) high mild
+  3 (3.00%) high severe
+multiple_records_encode/1000
+                        time:   [79.536 µs 80.042 µs 80.642 µs]
+                        thrpt:  [12.400 Melem/s 12.493 Melem/s 12.573 Melem/s]
+                 change:
+                        time:   [−45.096% −43.186% −41.270%] (p = 0.00 < 0.05)
+                        thrpt:  [+70.272% +76.014% +82.135%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  4 (4.00%) high mild
+  7 (7.00%) high severe
+
+multiple_records_decode/10
+                        time:   [445.57 ns 451.92 ns 457.75 ns]
+                        thrpt:  [21.846 Melem/s 22.128 Melem/s 22.443 Melem/s]
+                 change:
+                        time:   [−19.076% −18.284% −17.418%] (p = 0.00 < 0.05)
+                        thrpt:  [+21.092% +22.375% +23.572%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+multiple_records_decode/50
+                        time:   [2.0882 µs 2.1322 µs 2.1773 µs]
+                        thrpt:  [22.964 Melem/s 23.450 Melem/s 23.944 Melem/s]
+                 change:
+                        time:   [−18.043% −16.976% −15.784%] (p = 0.00 < 0.05)
+                        thrpt:  [+18.742% +20.446% +22.016%]
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+multiple_records_decode/100
+                        time:   [3.9455 µs 3.9854 µs 4.0292 µs]
+                        thrpt:  [24.819 Melem/s 25.092 Melem/s 25.346 Melem/s]
+                 change:
+                        time:   [−21.483% −20.912% −20.283%] (p = 0.00 < 0.05)
+                        thrpt:  [+25.443% +26.441% +27.361%]
+                        Performance has improved.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+multiple_records_decode/500
+                        time:   [21.857 µs 22.139 µs 22.430 µs]
+                        thrpt:  [22.292 Melem/s 22.584 Melem/s 22.876 Melem/s]
+                 change:
+                        time:   [−15.877% −14.580% −13.362%] (p = 0.00 < 0.05)
+                        thrpt:  [+15.422% +17.068% +18.874%]
+                        Performance has improved.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+multiple_records_decode/1000
+                        time:   [55.340 µs 56.851 µs 58.196 µs]
+                        thrpt:  [17.183 Melem/s 17.590 Melem/s 18.070 Melem/s]
+                 change:
+                        time:   [−10.819% −9.2053% −7.7605%] (p = 0.00 < 0.05)
+                        thrpt:  [+8.4134% +10.139% +12.132%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) low mild
+  2 (2.00%) high mild
+
+Running mimalloc v3 secure benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [125.25 ns 126.79 ns 128.37 ns]
+                        change: [+87.574% +89.906% +92.061%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  6 (6.00%) low mild
+
+header_decode           time:   [66.201 ns 70.153 ns 73.639 ns]
+                        change: [+45.236% +51.500% +57.635%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  6 (6.00%) high mild
+
+header_roundtrip        time:   [273.71 ns 277.55 ns 281.63 ns]
+                        change: [+137.89% +141.96% +146.24%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
+record_encode           time:   [133.40 ns 137.18 ns 141.80 ns]
+                        change: [+90.699% +96.621% +102.92%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
+record_decode           time:   [65.567 ns 67.225 ns 68.893 ns]
+                        change: [+36.123% +41.437% +46.755%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 12 outliers among 100 measurements (12.00%)
+  2 (2.00%) low mild
+  5 (5.00%) high mild
+  5 (5.00%) high severe
+
+record_roundtrip        time:   [190.64 ns 192.95 ns 195.34 ns]
+                        change: [+58.047% +59.735% +61.451%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
+record_encode_key_sizes/32
+                        time:   [127.26 ns 128.93 ns 130.70 ns]
+                        thrpt:  [233.49 MiB/s 236.69 MiB/s 239.80 MiB/s]
+                 change:
+                        time:   [+32.819% +35.309% +38.101%] (p = 0.00 < 0.05)
+                        thrpt:  [−27.589% −26.095% −24.709%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+record_encode_key_sizes/64
+                        time:   [112.38 ns 114.08 ns 116.15 ns]
+                        thrpt:  [525.49 MiB/s 535.00 MiB/s 543.14 MiB/s]
+                 change:
+                        time:   [+50.973% +53.831% +57.464%] (p = 0.00 < 0.05)
+                        thrpt:  [−36.493% −34.994% −33.763%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) high mild
+  7 (7.00%) high severe
+record_encode_key_sizes/128
+                        time:   [166.43 ns 169.56 ns 172.62 ns]
+                        thrpt:  [707.15 MiB/s 719.90 MiB/s 733.45 MiB/s]
+                 change:
+                        time:   [+60.749% +62.862% +65.152%] (p = 0.00 < 0.05)
+                        thrpt:  [−39.450% −38.598% −37.791%]
+                        Performance has regressed.
+Found 14 outliers among 100 measurements (14.00%)
+  7 (7.00%) high mild
+  7 (7.00%) high severe
+record_encode_key_sizes/256
+                        time:   [169.02 ns 173.86 ns 180.16 ns]
+                        thrpt:  [1.3234 GiB/s 1.3713 GiB/s 1.4106 GiB/s]
+                 change:
+                        time:   [+66.802% +72.900% +79.630%] (p = 0.00 < 0.05)
+                        thrpt:  [−44.330% −42.163% −40.049%]
+                        Performance has regressed.
+record_encode_key_sizes/512
+                        time:   [174.48 ns 175.63 ns 177.02 ns]
+                        thrpt:  [2.6938 GiB/s 2.7150 GiB/s 2.7329 GiB/s]
+                 change:
+                        time:   [+46.552% +48.245% +50.121%] (p = 0.00 < 0.05)
+                        thrpt:  [−33.387% −32.544% −31.765%]
+                        Performance has regressed.
+Found 12 outliers among 100 measurements (12.00%)
+  2 (2.00%) high mild
+  10 (10.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [301.34 ns 302.13 ns 303.14 ns]
+                        thrpt:  [3.1460 GiB/s 3.1565 GiB/s 3.1648 GiB/s]
+                 change:
+                        time:   [+128.83% +130.49% +131.98%] (p = 0.00 < 0.05)
+                        thrpt:  [−56.893% −56.615% −56.300%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low mild
+  4 (4.00%) high mild
+  3 (3.00%) high severe
+
+record_decode_key_sizes/32
+                        time:   [55.252 ns 55.430 ns 55.634 ns]
+                        thrpt:  [548.54 MiB/s 550.56 MiB/s 552.33 MiB/s]
+                 change:
+                        time:   [+4.6851% +9.1086% +13.877%] (p = 0.00 < 0.05)
+                        thrpt:  [−12.186% −8.3482% −4.4755%]
+                        Performance has regressed.
+Found 7 outliers among 100 measurements (7.00%)
+  2 (2.00%) high mild
+  5 (5.00%) high severe
+record_decode_key_sizes/64
+                        time:   [64.033 ns 64.801 ns 65.703 ns]
+                        thrpt:  [928.96 MiB/s 941.89 MiB/s 953.18 MiB/s]
+                 change:
+                        time:   [+17.463% +19.254% +21.072%] (p = 0.00 < 0.05)
+                        thrpt:  [−17.404% −16.145% −14.867%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+record_decode_key_sizes/128
+                        time:   [82.941 ns 84.607 ns 86.338 ns]
+                        thrpt:  [1.3807 GiB/s 1.4090 GiB/s 1.4373 GiB/s]
+                 change:
+                        time:   [+0.3061% +4.6512% +9.1974%] (p = 0.04 < 0.05)
+                        thrpt:  [−8.4227% −4.4445% −0.3052%]
+                        Change within noise threshold.
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+record_decode_key_sizes/256
+                        time:   [114.24 ns 118.55 ns 122.51 ns]
+                        thrpt:  [1.9461 GiB/s 2.0111 GiB/s 2.0869 GiB/s]
+                 change:
+                        time:   [+17.811% +21.928% +26.254%] (p = 0.00 < 0.05)
+                        thrpt:  [−20.794% −17.984% −15.118%]
+                        Performance has regressed.
+record_decode_key_sizes/512
+                        time:   [156.17 ns 160.45 ns 166.33 ns]
+                        thrpt:  [2.8668 GiB/s 2.9719 GiB/s 3.0534 GiB/s]
+                 change:
+                        time:   [+1.4609% +6.4130% +11.753%] (p = 0.01 < 0.05)
+                        thrpt:  [−10.517% −6.0266% −1.4399%]
+                        Performance has regressed.
+Found 13 outliers among 100 measurements (13.00%)
+  12 (12.00%) high mild
+  1 (1.00%) high severe
+record_decode_key_sizes/1024
+                        time:   [364.98 ns 368.52 ns 372.05 ns]
+                        thrpt:  [2.5633 GiB/s 2.5878 GiB/s 2.6130 GiB/s]
+                 change:
+                        time:   [+51.139% +53.904% +56.623%] (p = 0.00 < 0.05)
+                        thrpt:  [−36.152% −35.025% −33.836%]
+                        Performance has regressed.
+Found 21 outliers among 100 measurements (21.00%)
+  1 (1.00%) low severe
+  10 (10.00%) low mild
+  8 (8.00%) high mild
+  2 (2.00%) high severe
+
+multiple_records_encode/10
+                        time:   [1.2463 µs 1.2874 µs 1.3421 µs]
+                        thrpt:  [7.4507 Melem/s 7.7678 Melem/s 8.0234 Melem/s]
+                 change:
+                        time:   [+18.957% +21.387% +24.481%] (p = 0.00 < 0.05)
+                        thrpt:  [−19.667% −17.619% −15.936%]
+                        Performance has regressed.
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+multiple_records_encode/50
+                        time:   [6.0651 µs 6.3220 µs 6.6298 µs]
+                        thrpt:  [7.5417 Melem/s 7.9089 Melem/s 8.2439 Melem/s]
+                 change:
+                        time:   [+52.251% +57.842% +63.268%] (p = 0.00 < 0.05)
+                        thrpt:  [−38.751% −36.646% −34.319%]
+                        Performance has regressed.
+Found 15 outliers among 100 measurements (15.00%)
+  1 (1.00%) high mild
+  14 (14.00%) high severe
+multiple_records_encode/100
+                        time:   [11.830 µs 12.149 µs 12.642 µs]
+                        thrpt:  [7.9102 Melem/s 8.2313 Melem/s 8.4532 Melem/s]
+                 change:
+                        time:   [+50.031% +52.313% +55.085%] (p = 0.00 < 0.05)
+                        thrpt:  [−35.519% −34.346% −33.347%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+multiple_records_encode/500
+                        time:   [74.720 µs 78.747 µs 82.435 µs]
+                        thrpt:  [6.0654 Melem/s 6.3494 Melem/s 6.6916 Melem/s]
+                 change:
+                        time:   [+80.990% +86.586% +93.227%] (p = 0.00 < 0.05)
+                        thrpt:  [−48.247% −46.405% −44.748%]
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+multiple_records_encode/1000
+                        time:   [138.30 µs 140.31 µs 142.73 µs]
+                        thrpt:  [7.0063 Melem/s 7.1272 Melem/s 7.2306 Melem/s]
+                 change:
+                        time:   [+73.118% +78.896% +84.961%] (p = 0.00 < 0.05)
+                        thrpt:  [−45.935% −44.102% −42.236%]
+                        Performance has regressed.
+Found 16 outliers among 100 measurements (16.00%)
+  3 (3.00%) high mild
+  13 (13.00%) high severe
+
+multiple_records_decode/10
+                        time:   [544.69 ns 571.38 ns 597.48 ns]
+                        thrpt:  [16.737 Melem/s 17.502 Melem/s 18.359 Melem/s]
+                 change:
+                        time:   [+18.231% +21.309% +24.335%] (p = 0.00 < 0.05)
+                        thrpt:  [−19.572% −17.566% −15.420%]
+                        Performance has regressed.
+Found 14 outliers among 100 measurements (14.00%)
+  5 (5.00%) high mild
+  9 (9.00%) high severe
+multiple_records_decode/50
+                        time:   [2.5824 µs 2.6716 µs 2.7835 µs]
+                        thrpt:  [17.963 Melem/s 18.715 Melem/s 19.362 Melem/s]
+                 change:
+                        time:   [+16.838% +19.402% +22.101%] (p = 0.00 < 0.05)
+                        thrpt:  [−18.100% −16.249% −14.412%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  4 (4.00%) high mild
+  1 (1.00%) high severe
+multiple_records_decode/100
+                        time:   [6.6527 µs 6.7240 µs 6.7787 µs]
+                        thrpt:  [14.752 Melem/s 14.872 Melem/s 15.031 Melem/s]
+                 change:
+                        time:   [+46.742% +51.643% +56.210%] (p = 0.00 < 0.05)
+                        thrpt:  [−35.984% −34.056% −31.853%]
+                        Performance has regressed.
+multiple_records_decode/500
+                        time:   [24.021 µs 24.199 µs 24.413 µs]
+                        thrpt:  [20.481 Melem/s 20.662 Melem/s 20.815 Melem/s]
+                 change:
+                        time:   [+10.356% +12.370% +14.566%] (p = 0.00 < 0.05)
+                        thrpt:  [−12.714% −11.008% −9.3844%]
+                        Performance has regressed.
+Found 13 outliers among 100 measurements (13.00%)
+  3 (3.00%) high mild
+  10 (10.00%) high severe
+multiple_records_decode/1000
+                        time:   [81.879 µs 85.684 µs 89.607 µs]
+                        thrpt:  [11.160 Melem/s 11.671 Melem/s 12.213 Melem/s]
+                 change:
+                        time:   [+32.248% +37.220% +42.313%] (p = 0.00 < 0.05)
+                        thrpt:  [−29.732% −27.124% −24.385%]
+                        Performance has regressed.
+
+Running scudo benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [186.64 ns 188.17 ns 190.23 ns]
+                        change: [+43.559% +45.037% +46.625%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  2 (2.00%) low mild
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+
+header_decode           time:   [101.99 ns 102.19 ns 102.40 ns]
+                        change: [+58.664% +65.144% +71.708%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) low mild
+  1 (1.00%) high severe
+
+header_roundtrip        time:   [339.16 ns 352.53 ns 368.96 ns]
+                        change: [+46.012% +51.888% +57.766%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
+record_encode           time:   [236.34 ns 250.84 ns 263.36 ns]
+                        change: [+38.721% +45.919% +53.938%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 21 outliers among 100 measurements (21.00%)
+  21 (21.00%) high mild
+
+record_decode           time:   [73.404 ns 73.669 ns 73.995 ns]
+                        change: [+18.146% +24.573% +31.426%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 12 outliers among 100 measurements (12.00%)
+  2 (2.00%) high mild
+  10 (10.00%) high severe
+
+record_roundtrip        time:   [258.64 ns 260.04 ns 261.83 ns]
+                        change: [+32.317% +33.868% +35.480%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) high mild
+  5 (5.00%) high severe
+
+record_encode_key_sizes/32
+                        time:   [195.76 ns 199.63 ns 203.83 ns]
+                        thrpt:  [149.72 MiB/s 152.87 MiB/s 155.89 MiB/s]
+                 change:
+                        time:   [+43.099% +46.945% +50.622%] (p = 0.00 < 0.05)
+                        thrpt:  [−33.608% −31.948% −30.118%]
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  6 (6.00%) high mild
+record_encode_key_sizes/64
+                        time:   [190.61 ns 192.18 ns 193.78 ns]
+                        thrpt:  [314.98 MiB/s 317.59 MiB/s 320.21 MiB/s]
+                 change:
+                        time:   [+60.942% +64.622% +67.835%] (p = 0.00 < 0.05)
+                        thrpt:  [−40.418% −39.255% −37.866%]
+                        Performance has regressed.
+record_encode_key_sizes/128
+                        time:   [361.42 ns 385.41 ns 407.88 ns]
+                        thrpt:  [299.28 MiB/s 316.73 MiB/s 337.75 MiB/s]
+                 change:
+                        time:   [+94.392% +104.72% +116.01%] (p = 0.00 < 0.05)
+                        thrpt:  [−53.706% −51.152% −48.558%]
+                        Performance has regressed.
+record_encode_key_sizes/256
+                        time:   [246.08 ns 249.16 ns 252.46 ns]
+                        thrpt:  [967.03 MiB/s 979.85 MiB/s 992.10 MiB/s]
+                 change:
+                        time:   [+15.478% +19.852% +24.661%] (p = 0.00 < 0.05)
+                        thrpt:  [−19.782% −16.564% −13.404%]
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  5 (5.00%) high mild
+  4 (4.00%) high severe
+record_encode_key_sizes/512
+                        time:   [446.11 ns 455.69 ns 462.22 ns]
+                        thrpt:  [1.0316 GiB/s 1.0464 GiB/s 1.0689 GiB/s]
+                 change:
+                        time:   [+152.41% +155.95% +159.19%] (p = 0.00 < 0.05)
+                        thrpt:  [−61.418% −60.930% −60.381%]
+                        Performance has regressed.
+Found 20 outliers among 100 measurements (20.00%)
+  1 (1.00%) low severe
+  2 (2.00%) high mild
+  17 (17.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [272.85 ns 280.63 ns 290.89 ns]
+                        thrpt:  [3.2784 GiB/s 3.3984 GiB/s 3.4952 GiB/s]
+                 change:
+                        time:   [+19.343% +28.234% +37.867%] (p = 0.00 < 0.05)
+                        thrpt:  [−27.467% −22.017% −16.208%]
+                        Performance has regressed.
+
+record_decode_key_sizes/32
+                        time:   [78.065 ns 78.868 ns 79.685 ns]
+                        thrpt:  [382.98 MiB/s 386.95 MiB/s 390.92 MiB/s]
+                 change:
+                        time:   [+37.753% +39.227% +40.635%] (p = 0.00 < 0.05)
+                        thrpt:  [−28.894% −28.175% −27.406%]
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+record_decode_key_sizes/64
+                        time:   [96.131 ns 99.311 ns 103.01 ns]
+                        thrpt:  [592.52 MiB/s 614.59 MiB/s 634.91 MiB/s]
+                 change:
+                        time:   [+61.831% +65.815% +69.785%] (p = 0.00 < 0.05)
+                        thrpt:  [−41.102% −39.692% −38.207%]
+                        Performance has regressed.
+record_decode_key_sizes/128
+                        time:   [171.23 ns 175.51 ns 179.64 ns]
+                        thrpt:  [679.54 MiB/s 695.50 MiB/s 712.90 MiB/s]
+                 change:
+                        time:   [+98.416% +103.26% +108.48%] (p = 0.00 < 0.05)
+                        thrpt:  [−52.034% −50.803% −49.601%]
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+record_decode_key_sizes/256
+                        time:   [136.42 ns 144.35 ns 152.14 ns]
+                        thrpt:  [1.5671 GiB/s 1.6517 GiB/s 1.7476 GiB/s]
+                 change:
+                        time:   [+24.832% +30.249% +35.033%] (p = 0.00 < 0.05)
+                        thrpt:  [−25.944% −23.224% −19.893%]
+                        Performance has regressed.
+record_decode_key_sizes/512
+                        time:   [234.13 ns 240.42 ns 247.63 ns]
+                        thrpt:  [1.9256 GiB/s 1.9834 GiB/s 2.0366 GiB/s]
+                 change:
+                        time:   [+42.774% +48.065% +53.607%] (p = 0.00 < 0.05)
+                        thrpt:  [−34.899% −32.462% −29.959%]
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  9 (9.00%) high mild
+  1 (1.00%) high severe
+record_decode_key_sizes/1024
+                        time:   [289.79 ns 301.77 ns 312.17 ns]
+                        thrpt:  [3.0549 GiB/s 3.1602 GiB/s 3.2910 GiB/s]
+                 change:
+                        time:   [−26.454% −24.638% −22.712%] (p = 0.00 < 0.05)
+                        thrpt:  [+29.386% +32.693% +35.969%]
+                        Performance has improved.
+Found 21 outliers among 100 measurements (21.00%)
+  1 (1.00%) high mild
+  20 (20.00%) high severe
+
+multiple_records_encode/10
+                        time:   [1.9984 µs 2.0470 µs 2.1025 µs]
+                        thrpt:  [4.7563 Melem/s 4.8853 Melem/s 5.0040 Melem/s]
+                 change:
+                        time:   [+53.983% +58.010% +62.378%] (p = 0.00 < 0.05)
+                        thrpt:  [−38.415% −36.713% −35.058%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+multiple_records_encode/50
+                        time:   [9.4787 µs 9.5501 µs 9.6286 µs]
+                        thrpt:  [5.1928 Melem/s 5.2355 Melem/s 5.2750 Melem/s]
+                 change:
+                        time:   [+45.930% +50.580% +55.080%] (p = 0.00 < 0.05)
+                        thrpt:  [−35.517% −33.590% −31.474%]
+                        Performance has regressed.
+Found 7 outliers among 100 measurements (7.00%)
+  6 (6.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/100
+                        time:   [19.763 µs 19.920 µs 20.096 µs]
+                        thrpt:  [4.9761 Melem/s 5.0201 Melem/s 5.0598 Melem/s]
+                 change:
+                        time:   [+60.203% +62.911% +65.270%] (p = 0.00 < 0.05)
+                        thrpt:  [−39.493% −38.617% −37.579%]
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  4 (4.00%) high mild
+  5 (5.00%) high severe
+multiple_records_encode/500
+                        time:   [94.651 µs 95.439 µs 96.486 µs]
+                        thrpt:  [5.1821 Melem/s 5.2389 Melem/s 5.2826 Melem/s]
+                 change:
+                        time:   [+25.910% +30.088% +34.277%] (p = 0.00 < 0.05)
+                        thrpt:  [−25.527% −23.129% −20.578%]
+                        Performance has regressed.
+Found 14 outliers among 100 measurements (14.00%)
+  8 (8.00%) high mild
+  6 (6.00%) high severe
+multiple_records_encode/1000
+                        time:   [286.27 µs 289.50 µs 293.09 µs]
+                        thrpt:  [3.4119 Melem/s 3.4543 Melem/s 3.4932 Melem/s]
+                 change:
+                        time:   [+92.249% +98.493% +104.65%] (p = 0.00 < 0.05)
+                        thrpt:  [−51.137% −49.620% −47.984%]
+                        Performance has regressed.
+
+multiple_records_decode/10
+                        time:   [697.19 ns 702.81 ns 709.04 ns]
+                        thrpt:  [14.104 Melem/s 14.229 Melem/s 14.343 Melem/s]
+                 change:
+                        time:   [+27.414% +30.661% +33.781%] (p = 0.00 < 0.05)
+                        thrpt:  [−25.251% −23.466% −21.516%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high mild
+multiple_records_decode/50
+                        time:   [3.5402 µs 3.5990 µs 3.6642 µs]
+                        thrpt:  [13.646 Melem/s 13.893 Melem/s 14.124 Melem/s]
+                 change:
+                        time:   [+36.230% +39.679% +43.034%] (p = 0.00 < 0.05)
+                        thrpt:  [−30.087% −28.407% −26.595%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+multiple_records_decode/100
+                        time:   [7.1451 µs 7.3629 µs 7.5804 µs]
+                        thrpt:  [13.192 Melem/s 13.582 Melem/s 13.996 Melem/s]
+                 change:
+                        time:   [+12.684% +16.423% +20.580%] (p = 0.00 < 0.05)
+                        thrpt:  [−17.068% −14.107% −11.256%]
+                        Performance has regressed.
+Found 12 outliers among 100 measurements (12.00%)
+  12 (12.00%) high severe
+multiple_records_decode/500
+                        time:   [48.351 µs 50.016 µs 51.445 µs]
+                        thrpt:  [9.7191 Melem/s 9.9969 Melem/s 10.341 Melem/s]
+                 change:
+                        time:   [+104.81% +108.51% +112.00%] (p = 0.00 < 0.05)
+                        thrpt:  [−52.831% −52.040% −51.173%]
+                        Performance has regressed.
+Found 16 outliers among 100 measurements (16.00%)
+  4 (4.00%) low severe
+  9 (9.00%) high mild
+  3 (3.00%) high severe
+multiple_records_decode/1000
+                        time:   [69.771 µs 70.935 µs 72.467 µs]
+                        thrpt:  [13.799 Melem/s 14.097 Melem/s 14.333 Melem/s]
+                 change:
+                        time:   [−16.430% −13.480% −10.417%] (p = 0.00 < 0.05)
+                        thrpt:  [+11.628% +15.580% +19.660%]
+                        Performance has improved.
+Found 10 outliers among 100 measurements (10.00%)
+  5 (5.00%) high mild
+  5 (5.00%) high severe
+
+Running snmalloc benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [59.029 ns 60.309 ns 61.738 ns]
+                        change: [−67.036% −65.168% −63.349%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 10 outliers among 100 measurements (10.00%)
+  5 (5.00%) high mild
+  5 (5.00%) high severe
+
+header_decode           time:   [58.256 ns 59.238 ns 60.255 ns]
+                        change: [−43.001% −42.116% −41.282%] (p = 0.00 < 0.05)
+                        Performance has improved.
+
+header_roundtrip        time:   [100.56 ns 101.71 ns 102.97 ns]
+                        change: [−75.749% −74.894% −73.957%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) low mild
+  2 (2.00%) high mild
+
+record_encode           time:   [72.888 ns 75.766 ns 78.449 ns]
+                        change: [−69.131% −67.601% −66.041%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 15 outliers among 100 measurements (15.00%)
+  12 (12.00%) high mild
+  3 (3.00%) high severe
+
+record_decode           time:   [46.382 ns 46.772 ns 47.219 ns]
+                        change: [−45.728% −42.646% −39.730%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+
+record_roundtrip        time:   [110.12 ns 110.30 ns 110.49 ns]
+                        change: [−57.810% −57.578% −57.372%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+record_encode_key_sizes/32
+                        time:   [68.190 ns 69.267 ns 70.487 ns]
+                        thrpt:  [432.95 MiB/s 440.58 MiB/s 447.53 MiB/s]
+                 change:
+                        time:   [−65.590% −64.847% −64.082%] (p = 0.00 < 0.05)
+                        thrpt:  [+178.41% +184.47% +190.62%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high mild
+record_encode_key_sizes/64
+                        time:   [64.534 ns 65.512 ns 66.785 ns]
+                        thrpt:  [913.90 MiB/s 931.66 MiB/s 945.78 MiB/s]
+                 change:
+                        time:   [−65.491% −64.766% −63.845%] (p = 0.00 < 0.05)
+                        thrpt:  [+176.59% +183.82% +189.78%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+record_encode_key_sizes/128
+                        time:   [93.266 ns 93.682 ns 94.178 ns]
+                        thrpt:  [1.2658 GiB/s 1.2725 GiB/s 1.2782 GiB/s]
+                 change:
+                        time:   [−73.537% −72.074% −70.491%] (p = 0.00 < 0.05)
+                        thrpt:  [+238.88% +258.09% +277.88%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  9 (9.00%) high mild
+  2 (2.00%) high severe
+record_encode_key_sizes/256
+                        time:   [96.717 ns 98.766 ns 101.26 ns]
+                        thrpt:  [2.3544 GiB/s 2.4140 GiB/s 2.4651 GiB/s]
+                 change:
+                        time:   [−60.555% −59.574% −58.479%] (p = 0.00 < 0.05)
+                        thrpt:  [+140.84% +147.36% +153.52%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  2 (2.00%) high mild
+  9 (9.00%) high severe
+record_encode_key_sizes/512
+                        time:   [101.04 ns 102.81 ns 104.72 ns]
+                        thrpt:  [4.5533 GiB/s 4.6381 GiB/s 4.7194 GiB/s]
+                 change:
+                        time:   [−77.602% −77.035% −76.409%] (p = 0.00 < 0.05)
+                        thrpt:  [+323.89% +335.45% +346.48%]
+                        Performance has improved.
+Found 13 outliers among 100 measurements (13.00%)
+  6 (6.00%) high mild
+  7 (7.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [137.68 ns 144.23 ns 150.46 ns]
+                        thrpt:  [6.3385 GiB/s 6.6123 GiB/s 6.9267 GiB/s]
+                 change:
+                        time:   [−69.214% −66.507% −63.401%] (p = 0.00 < 0.05)
+                        thrpt:  [+173.23% +198.57% +224.82%]
+                        Performance has improved.
+
+record_decode_key_sizes/32
+                        time:   [42.399 ns 43.485 ns 45.398 ns]
+                        thrpt:  [672.22 MiB/s 701.79 MiB/s 719.77 MiB/s]
+                 change:
+                        time:   [−44.746% −43.585% −42.228%] (p = 0.00 < 0.05)
+                        thrpt:  [+73.094% +77.258% +80.982%]
+                        Performance has improved.
+Found 12 outliers among 100 measurements (12.00%)
+  2 (2.00%) high mild
+  10 (10.00%) high severe
+record_decode_key_sizes/64
+                        time:   [52.370 ns 52.871 ns 53.473 ns]
+                        thrpt:  [1.1147 GiB/s 1.1274 GiB/s 1.1381 GiB/s]
+                 change:
+                        time:   [−52.124% −51.013% −49.822%] (p = 0.00 < 0.05)
+                        thrpt:  [+99.290% +104.14% +108.87%]
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  2 (2.00%) high mild
+  5 (5.00%) high severe
+record_decode_key_sizes/128
+                        time:   [65.150 ns 66.386 ns 67.976 ns]
+                        thrpt:  [1.7537 GiB/s 1.7957 GiB/s 1.8298 GiB/s]
+                 change:
+                        time:   [−57.609% −56.098% −54.550%] (p = 0.00 < 0.05)
+                        thrpt:  [+120.02% +127.78% +135.90%]
+                        Performance has improved.
+record_decode_key_sizes/256
+                        time:   [106.12 ns 110.60 ns 115.15 ns]
+                        thrpt:  [2.0706 GiB/s 2.1558 GiB/s 2.2467 GiB/s]
+                 change:
+                        time:   [−23.812% −21.092% −18.328%] (p = 0.00 < 0.05)
+                        thrpt:  [+22.441% +26.731% +31.254%]
+                        Performance has improved.
+Found 15 outliers among 100 measurements (15.00%)
+  10 (10.00%) low severe
+  1 (1.00%) high mild
+  4 (4.00%) high severe
+record_decode_key_sizes/512
+                        time:   [159.99 ns 164.12 ns 167.86 ns]
+                        thrpt:  [2.8408 GiB/s 2.9054 GiB/s 2.9804 GiB/s]
+                 change:
+                        time:   [−35.831% −33.546% −31.305%] (p = 0.00 < 0.05)
+                        thrpt:  [+45.570% +50.480% +55.838%]
+                        Performance has improved.
+Found 10 outliers among 100 measurements (10.00%)
+  10 (10.00%) low mild
+record_decode_key_sizes/1024
+                        time:   [299.38 ns 306.56 ns 312.89 ns]
+                        thrpt:  [3.0480 GiB/s 3.1109 GiB/s 3.1855 GiB/s]
+                 change:
+                        time:   [−2.1966% +1.5497% +5.5874%] (p = 0.43 > 0.05)
+                        thrpt:  [−5.2917% −1.5261% +2.2459%]
+                        No change in performance detected.
+
+multiple_records_encode/10
+                        time:   [769.80 ns 804.24 ns 836.01 ns]
+                        thrpt:  [11.962 Melem/s 12.434 Melem/s 12.990 Melem/s]
+                 change:
+                        time:   [−63.857% −62.468% −61.016%] (p = 0.00 < 0.05)
+                        thrpt:  [+156.52% +166.44% +176.68%]
+                        Performance has improved.
+multiple_records_encode/50
+                        time:   [4.6517 µs 5.0258 µs 5.4521 µs]
+                        thrpt:  [9.1708 Melem/s 9.9487 Melem/s 10.749 Melem/s]
+                 change:
+                        time:   [−49.006% −46.752% −44.374%] (p = 0.00 < 0.05)
+                        thrpt:  [+79.773% +87.799% +96.103%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/100
+                        time:   [6.3869 µs 6.4584 µs 6.5338 µs]
+                        thrpt:  [15.305 Melem/s 15.484 Melem/s 15.657 Melem/s]
+                 change:
+                        time:   [−67.663% −67.275% −66.782%] (p = 0.00 < 0.05)
+                        thrpt:  [+201.04% +205.58% +209.25%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/500
+                        time:   [34.481 µs 35.265 µs 36.224 µs]
+                        thrpt:  [13.803 Melem/s 14.178 Melem/s 14.501 Melem/s]
+                 change:
+                        time:   [−62.583% −61.914% −61.116%] (p = 0.00 < 0.05)
+                        thrpt:  [+157.17% +162.56% +167.26%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+multiple_records_encode/1000
+                        time:   [76.799 µs 80.598 µs 84.481 µs]
+                        thrpt:  [11.837 Melem/s 12.407 Melem/s 13.021 Melem/s]
+                 change:
+                        time:   [−74.664% −73.581% −72.512%] (p = 0.00 < 0.05)
+                        thrpt:  [+263.79% +278.51% +294.69%]
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
+multiple_records_decode/10
+                        time:   [563.95 ns 569.94 ns 576.58 ns]
+                        thrpt:  [17.344 Melem/s 17.546 Melem/s 17.732 Melem/s]
+                 change:
+                        time:   [−20.183% −19.223% −18.279%] (p = 0.00 < 0.05)
+                        thrpt:  [+22.367% +23.797% +25.286%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+multiple_records_decode/50
+                        time:   [1.9665 µs 2.0113 µs 2.0691 µs]
+                        thrpt:  [24.165 Melem/s 24.859 Melem/s 25.426 Melem/s]
+                 change:
+                        time:   [−44.964% −43.637% −42.005%] (p = 0.00 < 0.05)
+                        thrpt:  [+72.428% +77.422% +81.700%]
+                        Performance has improved.
+Found 18 outliers among 100 measurements (18.00%)
+  2 (2.00%) low mild
+  5 (5.00%) high mild
+  11 (11.00%) high severe
+multiple_records_decode/100
+                        time:   [4.0468 µs 4.1146 µs 4.1932 µs]
+                        thrpt:  [23.848 Melem/s 24.304 Melem/s 24.711 Melem/s]
+                 change:
+                        time:   [−42.542% −41.373% −40.280%] (p = 0.00 < 0.05)
+                        thrpt:  [+67.448% +70.571% +74.040%]
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  5 (5.00%) high mild
+  1 (1.00%) high severe
+multiple_records_decode/500
+                        time:   [20.279 µs 20.839 µs 21.518 µs]
+                        thrpt:  [23.236 Melem/s 23.993 Melem/s 24.656 Melem/s]
+                 change:
+                        time:   [−57.875% −56.507% −54.987%] (p = 0.00 < 0.05)
+                        thrpt:  [+122.16% +129.92% +137.39%]
+                        Performance has improved.
+multiple_records_decode/1000
+                        time:   [54.743 µs 55.040 µs 55.387 µs]
+                        thrpt:  [18.055 Melem/s 18.168 Melem/s 18.267 Melem/s]
+                 change:
+                        time:   [−21.261% −20.369% −19.591%] (p = 0.00 < 0.05)
+                        thrpt:  [+24.364% +25.579% +27.002%]
+                        Performance has improved.
+
+Running snmalloc secure benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [69.872 ns 72.324 ns 75.560 ns]
+                        change: [+21.467% +30.082% +38.611%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
+header_decode           time:   [48.215 ns 49.992 ns 52.078 ns]
+                        change: [−18.355% −15.449% −12.109%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 15 outliers among 100 measurements (15.00%)
+  1 (1.00%) high mild
+  14 (14.00%) high severe
+
+header_roundtrip        time:   [117.22 ns 119.69 ns 123.52 ns]
+                        change: [+17.073% +18.789% +20.781%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
+
+record_encode           time:   [88.511 ns 91.788 ns 95.632 ns]
+                        change: [+35.287% +40.375% +45.401%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
+record_decode           time:   [51.379 ns 51.629 ns 51.903 ns]
+                        change: [+9.0779% +9.8728% +10.621%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high mild
+
+record_roundtrip        time:   [160.08 ns 165.13 ns 169.97 ns]
+                        change: [+41.239% +44.556% +48.259%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
+record_encode_key_sizes/32
+                        time:   [77.797 ns 78.492 ns 79.302 ns]
+                        thrpt:  [384.83 MiB/s 388.80 MiB/s 392.27 MiB/s]
+                 change:
+                        time:   [+11.627% +13.644% +15.638%] (p = 0.00 < 0.05)
+                        thrpt:  [−13.524% −12.006% −10.416%]
+                        Performance has regressed.
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+record_encode_key_sizes/64
+                        time:   [75.599 ns 75.838 ns 76.100 ns]
+                        thrpt:  [802.04 MiB/s 804.81 MiB/s 807.35 MiB/s]
+                 change:
+                        time:   [+10.009% +12.916% +15.386%] (p = 0.00 < 0.05)
+                        thrpt:  [−13.334% −11.438% −9.0981%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+record_encode_key_sizes/128
+                        time:   [98.958 ns 99.499 ns 100.08 ns]
+                        thrpt:  [1.1911 GiB/s 1.1981 GiB/s 1.2046 GiB/s]
+                 change:
+                        time:   [+4.7694% +6.0022% +7.4478%] (p = 0.00 < 0.05)
+                        thrpt:  [−6.9315% −5.6624% −4.5523%]
+                        Performance has regressed.
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) low mild
+  5 (5.00%) high mild
+  5 (5.00%) high severe
+record_encode_key_sizes/256
+                        time:   [124.53 ns 133.08 ns 141.28 ns]
+                        thrpt:  [1.6875 GiB/s 1.7916 GiB/s 1.9146 GiB/s]
+                 change:
+                        time:   [+12.430% +17.489% +23.009%] (p = 0.00 < 0.05)
+                        thrpt:  [−18.705% −14.885% −11.056%]
+                        Performance has regressed.
+Found 21 outliers among 100 measurements (21.00%)
+  15 (15.00%) high mild
+  6 (6.00%) high severe
+record_encode_key_sizes/512
+                        time:   [139.38 ns 146.99 ns 153.83 ns]
+                        thrpt:  [3.0997 GiB/s 3.2440 GiB/s 3.4211 GiB/s]
+                 change:
+                        time:   [+21.226% +26.111% +31.305%] (p = 0.00 < 0.05)
+                        thrpt:  [−23.842% −20.704% −17.510%]
+                        Performance has regressed.
+Found 18 outliers among 100 measurements (18.00%)
+  9 (9.00%) high mild
+  9 (9.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [136.19 ns 137.27 ns 138.44 ns]
+                        thrpt:  [6.8885 GiB/s 6.9476 GiB/s 7.0028 GiB/s]
+                 change:
+                        time:   [+3.7003% +7.8854% +12.233%] (p = 0.00 < 0.05)
+                        thrpt:  [−10.900% −7.3091% −3.5683%]
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  7 (7.00%) high mild
+  3 (3.00%) high severe
+
+record_decode_key_sizes/32
+                        time:   [50.711 ns 51.025 ns 51.358 ns]
+                        thrpt:  [594.21 MiB/s 598.09 MiB/s 601.80 MiB/s]
+                 change:
+                        time:   [+14.005% +16.727% +19.151%] (p = 0.00 < 0.05)
+                        thrpt:  [−16.073% −14.330% −12.285%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+record_decode_key_sizes/64
+                        time:   [55.385 ns 55.552 ns 55.776 ns]
+                        thrpt:  [1.0686 GiB/s 1.0729 GiB/s 1.0762 GiB/s]
+                 change:
+                        time:   [+4.0627% +5.0569% +5.9535%] (p = 0.00 < 0.05)
+                        thrpt:  [−5.6189% −4.8135% −3.9040%]
+                        Performance has regressed.
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
+record_decode_key_sizes/128
+                        time:   [67.836 ns 68.439 ns 69.154 ns]
+                        thrpt:  [1.7238 GiB/s 1.7418 GiB/s 1.7573 GiB/s]
+                 change:
+                        time:   [−10.678% −8.0455% −5.2088%] (p = 0.00 < 0.05)
+                        thrpt:  [+5.4950% +8.7495% +11.954%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+record_decode_key_sizes/256
+                        time:   [88.192 ns 88.569 ns 89.098 ns]
+                        thrpt:  [2.6759 GiB/s 2.6919 GiB/s 2.7034 GiB/s]
+                 change:
+                        time:   [−24.834% −23.600% −22.168%] (p = 0.00 < 0.05)
+                        thrpt:  [+28.482% +30.891% +33.038%]
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  3 (3.00%) high mild
+  4 (4.00%) high severe
+record_decode_key_sizes/512
+                        time:   [133.92 ns 134.49 ns 135.21 ns]
+                        thrpt:  [3.5268 GiB/s 3.5456 GiB/s 3.5606 GiB/s]
+                 change:
+                        time:   [−18.164% −16.267% −14.317%] (p = 0.00 < 0.05)
+                        thrpt:  [+16.710% +19.427% +22.195%]
+                        Performance has improved.
+Found 13 outliers among 100 measurements (13.00%)
+  1 (1.00%) low mild
+  4 (4.00%) high mild
+  8 (8.00%) high severe
+record_decode_key_sizes/1024
+                        time:   [229.73 ns 232.85 ns 236.23 ns]
+                        thrpt:  [4.0371 GiB/s 4.0957 GiB/s 4.1513 GiB/s]
+                 change:
+                        time:   [−20.030% −17.564% −15.111%] (p = 0.00 < 0.05)
+                        thrpt:  [+17.801% +21.306% +25.046%]
+                        Performance has improved.
+Found 12 outliers among 100 measurements (12.00%)
+  5 (5.00%) high mild
+  7 (7.00%) high severe
+
+multiple_records_encode/10
+                        time:   [800.13 ns 817.15 ns 840.83 ns]
+                        thrpt:  [11.893 Melem/s 12.238 Melem/s 12.498 Melem/s]
+                 change:
+                        time:   [+9.3432% +13.718% +18.587%] (p = 0.00 < 0.05)
+                        thrpt:  [−15.673% −12.064% −8.5448%]
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  6 (6.00%) high mild
+  3 (3.00%) high severe
+multiple_records_encode/50
+                        time:   [3.9442 µs 4.0372 µs 4.1369 µs]
+                        thrpt:  [12.086 Melem/s 12.385 Melem/s 12.677 Melem/s]
+                 change:
+                        time:   [−25.332% −21.178% −16.549%] (p = 0.00 < 0.05)
+                        thrpt:  [+19.831% +26.867% +33.926%]
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  3 (3.00%) high mild
+  4 (4.00%) high severe
+multiple_records_encode/100
+                        time:   [11.135 µs 11.370 µs 11.628 µs]
+                        thrpt:  [8.6001 Melem/s 8.7954 Melem/s 8.9810 Melem/s]
+                 change:
+                        time:   [+69.496% +72.088% +74.944%] (p = 0.00 < 0.05)
+                        thrpt:  [−42.839% −41.890% −41.001%]
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+multiple_records_encode/500
+                        time:   [41.267 µs 41.726 µs 42.241 µs]
+                        thrpt:  [11.837 Melem/s 11.983 Melem/s 12.116 Melem/s]
+                 change:
+                        time:   [+12.394% +14.755% +17.036%] (p = 0.00 < 0.05)
+                        thrpt:  [−14.556% −12.858% −11.027%]
+                        Performance has regressed.
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high mild
+multiple_records_encode/1000
+                        time:   [84.617 µs 86.616 µs 89.132 µs]
+                        thrpt:  [11.219 Melem/s 11.545 Melem/s 11.818 Melem/s]
+                 change:
+                        time:   [+7.3900% +11.913% +16.748%] (p = 0.00 < 0.05)
+                        thrpt:  [−14.346% −10.645% −6.8815%]
+                        Performance has regressed.
+Found 13 outliers among 100 measurements (13.00%)
+  5 (5.00%) high mild
+  8 (8.00%) high severe
+
+multiple_records_decode/10
+                        time:   [444.11 ns 454.64 ns 469.79 ns]
+                        thrpt:  [21.286 Melem/s 21.996 Melem/s 22.517 Melem/s]
+                 change:
+                        time:   [−24.244% −22.962% −21.115%] (p = 0.00 < 0.05)
+                        thrpt:  [+26.767% +29.806% +32.002%]
+                        Performance has improved.
+Found 13 outliers among 100 measurements (13.00%)
+  9 (9.00%) high mild
+  4 (4.00%) high severe
+multiple_records_decode/50
+                        time:   [2.0848 µs 2.0973 µs 2.1110 µs]
+                        thrpt:  [23.686 Melem/s 23.841 Melem/s 23.983 Melem/s]
+                 change:
+                        time:   [+2.8854% +5.3386% +7.4135%] (p = 0.00 < 0.05)
+                        thrpt:  [−6.9018% −5.0681% −2.8044%]
+                        Performance has regressed.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+multiple_records_decode/100
+                        time:   [4.2130 µs 4.2529 µs 4.3013 µs]
+                        thrpt:  [23.249 Melem/s 23.514 Melem/s 23.736 Melem/s]
+                 change:
+                        time:   [+0.7492% +2.3698% +3.9401%] (p = 0.00 < 0.05)
+                        thrpt:  [−3.7907% −2.3149% −0.7436%]
+                        Change within noise threshold.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+multiple_records_decode/500
+                        time:   [21.006 µs 21.023 µs 21.045 µs]
+                        thrpt:  [23.759 Melem/s 23.783 Melem/s 23.803 Melem/s]
+                 change:
+                        time:   [−8.0743% −5.3822% −2.6226%] (p = 0.00 < 0.05)
+                        thrpt:  [+2.6932% +5.6883% +8.7835%]
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  2 (2.00%) low mild
+  6 (6.00%) high mild
+  3 (3.00%) high severe
+multiple_records_decode/1000
+                        time:   [43.930 µs 44.830 µs 46.023 µs]
+                        thrpt:  [21.728 Melem/s 22.306 Melem/s 22.764 Melem/s]
+                 change:
+                        time:   [−8.4344% −4.8064% −0.4806%] (p = 0.02 < 0.05)
+                        thrpt:  [+0.4829% +5.0491% +9.2114%]
+                        Change within noise threshold.
+
+Running tcmalloc benchmarks...
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [74.229 ns 77.470 ns 81.471 ns]
+                        change: [−11.008% −5.4196% +0.5579%] (p = 0.08 > 0.05)
+                        No change in performance detected.
+
+header_decode           time:   [44.469 ns 44.620 ns 44.810 ns]
+                        change: [−13.907% −10.477% −7.1652%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  6 (6.00%) high mild
+  1 (1.00%) high severe
+
+header_roundtrip        time:   [115.17 ns 115.90 ns 116.79 ns]
+                        change: [−3.8928% −1.8570% +0.3071%] (p = 0.08 > 0.05)
+                        No change in performance detected.
+Found 11 outliers among 100 measurements (11.00%)
+  5 (5.00%) high mild
+  6 (6.00%) high severe
+
+record_encode           time:   [66.894 ns 67.080 ns 67.301 ns]
+                        change: [−33.881% −32.102% −30.154%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+
+record_decode           time:   [45.000 ns 45.221 ns 45.532 ns]
+                        change: [−12.539% −12.132% −11.704%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  5 (5.00%) high mild
+  1 (1.00%) high severe
+
+record_roundtrip        time:   [114.01 ns 114.24 ns 114.50 ns]
+                        change: [−30.110% −28.477% −26.750%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+
+record_encode_key_sizes/32
+                        time:   [106.60 ns 106.69 ns 106.78 ns]
+                        thrpt:  [285.79 MiB/s 286.04 MiB/s 286.27 MiB/s]
+                 change:
+                        time:   [+34.491% +35.760% +36.974%] (p = 0.00 < 0.05)
+                        thrpt:  [−26.993% −26.341% −25.646%]
+                        Performance has regressed.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+record_encode_key_sizes/64
+                        time:   [67.618 ns 67.747 ns 67.872 ns]
+                        thrpt:  [899.26 MiB/s 900.92 MiB/s 902.65 MiB/s]
+                 change:
+                        time:   [−11.500% −10.749% −10.134%] (p = 0.00 < 0.05)
+                        thrpt:  [+11.277% +12.044% +12.994%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) low mild
+  3 (3.00%) high mild
+record_encode_key_sizes/128
+                        time:   [83.041 ns 83.311 ns 83.648 ns]
+                        thrpt:  [1.4251 GiB/s 1.4309 GiB/s 1.4355 GiB/s]
+                 change:
+                        time:   [−17.474% −16.510% −15.607%] (p = 0.00 < 0.05)
+                        thrpt:  [+18.493% +19.775% +21.174%]
+                        Performance has improved.
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+record_encode_key_sizes/256
+                        time:   [87.468 ns 87.748 ns 88.101 ns]
+                        thrpt:  [2.7062 GiB/s 2.7171 GiB/s 2.7258 GiB/s]
+                 change:
+                        time:   [−27.948% −25.014% −22.127%] (p = 0.00 < 0.05)
+                        thrpt:  [+28.415% +33.359% +38.788%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+record_encode_key_sizes/512
+                        time:   [92.209 ns 92.401 ns 92.596 ns]
+                        thrpt:  [5.1497 GiB/s 5.1605 GiB/s 5.1713 GiB/s]
+                 change:
+                        time:   [−32.054% −29.751% −27.435%] (p = 0.00 < 0.05)
+                        thrpt:  [+37.808% +42.351% +47.175%]
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) low mild
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+record_encode_key_sizes/1024
+                        time:   [97.902 ns 98.084 ns 98.283 ns]
+                        thrpt:  [9.7033 GiB/s 9.7230 GiB/s 9.7411 GiB/s]
+                 change:
+                        time:   [−30.723% −29.923% −29.186%] (p = 0.00 < 0.05)
+                        thrpt:  [+41.215% +42.701% +44.347%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) low mild
+  2 (2.00%) high mild
+
+record_decode_key_sizes/32
+                        time:   [45.639 ns 45.731 ns 45.855 ns]
+                        thrpt:  [665.53 MiB/s 667.32 MiB/s 668.68 MiB/s]
+                 change:
+                        time:   [−10.661% −9.9140% −9.1390%] (p = 0.00 < 0.05)
+                        thrpt:  [+10.058% +11.005% +11.933%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+record_decode_key_sizes/64
+                        time:   [53.410 ns 53.528 ns 53.699 ns]
+                        thrpt:  [1.1100 GiB/s 1.1135 GiB/s 1.1160 GiB/s]
+                 change:
+                        time:   [−4.0516% −3.6747% −3.3553%] (p = 0.00 < 0.05)
+                        thrpt:  [+3.4718% +3.8149% +4.2226%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low mild
+  3 (3.00%) high mild
+  4 (4.00%) high severe
+record_decode_key_sizes/128
+                        time:   [68.250 ns 70.020 ns 72.251 ns]
+                        thrpt:  [1.6499 GiB/s 1.7025 GiB/s 1.7467 GiB/s]
+                 change:
+                        time:   [+4.0191% +7.4889% +10.977%] (p = 0.00 < 0.05)
+                        thrpt:  [−9.8909% −6.9671% −3.8638%]
+                        Performance has regressed.
+record_decode_key_sizes/256
+                        time:   [84.965 ns 85.385 ns 85.865 ns]
+                        thrpt:  [2.7767 GiB/s 2.7923 GiB/s 2.8061 GiB/s]
+                 change:
+                        time:   [−4.2751% −3.6751% −3.1434%] (p = 0.00 < 0.05)
+                        thrpt:  [+3.2454% +3.8154% +4.4660%]
+                        Performance has improved.
+Found 17 outliers among 100 measurements (17.00%)
+  4 (4.00%) low mild
+  5 (5.00%) high mild
+  8 (8.00%) high severe
+record_decode_key_sizes/512
+                        time:   [131.41 ns 131.93 ns 132.55 ns]
+                        thrpt:  [3.5974 GiB/s 3.6143 GiB/s 3.6286 GiB/s]
+                 change:
+                        time:   [−5.3984% −4.0474% −2.8227%] (p = 0.00 < 0.05)
+                        thrpt:  [+2.9047% +4.2181% +5.7065%]
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+record_decode_key_sizes/1024
+                        time:   [217.88 ns 218.11 ns 218.35 ns]
+                        thrpt:  [4.3677 GiB/s 4.3724 GiB/s 4.3771 GiB/s]
+                 change:
+                        time:   [−6.5100% −5.5775% −4.8000%] (p = 0.00 < 0.05)
+                        thrpt:  [+5.0420% +5.9069% +6.9634%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) low mild
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+
+multiple_records_encode/10
+                        time:   [701.34 ns 706.35 ns 711.86 ns]
+                        thrpt:  [14.048 Melem/s 14.157 Melem/s 14.258 Melem/s]
+                 change:
+                        time:   [−18.572% −15.661% −12.968%] (p = 0.00 < 0.05)
+                        thrpt:  [+14.900% +18.569% +22.808%]
+                        Performance has improved.
+Found 12 outliers among 100 measurements (12.00%)
+  5 (5.00%) high mild
+  7 (7.00%) high severe
+multiple_records_encode/50
+                        time:   [3.4321 µs 3.4444 µs 3.4590 µs]
+                        thrpt:  [14.455 Melem/s 14.516 Melem/s 14.568 Melem/s]
+                 change:
+                        time:   [−16.998% −14.427% −12.383%] (p = 0.00 < 0.05)
+                        thrpt:  [+14.133% +16.860% +20.479%]
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) low mild
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+multiple_records_encode/100
+                        time:   [7.8658 µs 8.2383 µs 8.6901 µs]
+                        thrpt:  [11.507 Melem/s 12.138 Melem/s 12.713 Melem/s]
+                 change:
+                        time:   [−16.345% −12.982% −9.9190%] (p = 0.00 < 0.05)
+                        thrpt:  [+11.011% +14.918% +19.538%]
+                        Performance has improved.
+multiple_records_encode/500
+                        time:   [38.668 µs 40.356 µs 42.458 µs]
+                        thrpt:  [11.776 Melem/s 12.390 Melem/s 12.931 Melem/s]
+                 change:
+                        time:   [+8.8262% +13.545% +17.612%] (p = 0.00 < 0.05)
+                        thrpt:  [−14.975% −11.929% −8.1104%]
+                        Performance has regressed.
+multiple_records_encode/1000
+                        time:   [68.154 µs 68.498 µs 68.929 µs]
+                        thrpt:  [14.508 Melem/s 14.599 Melem/s 14.673 Melem/s]
+                 change:
+                        time:   [−22.068% −20.763% −19.569%] (p = 0.00 < 0.05)
+                        thrpt:  [+24.330% +26.204% +28.317%]
+                        Performance has improved.
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+
+multiple_records_decode/10
+                        time:   [405.93 ns 406.39 ns 406.87 ns]
+                        thrpt:  [24.578 Melem/s 24.607 Melem/s 24.635 Melem/s]
+                 change:
+                        time:   [−9.8641% −7.9790% −6.6425%] (p = 0.00 < 0.05)
+                        thrpt:  [+7.1151% +8.6709% +10.944%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) low mild
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+multiple_records_decode/50
+                        time:   [1.9637 µs 1.9682 µs 1.9742 µs]
+                        thrpt:  [25.326 Melem/s 25.403 Melem/s 25.462 Melem/s]
+                 change:
+                        time:   [−6.8515% −6.0337% −5.2017%] (p = 0.00 < 0.05)
+                        thrpt:  [+5.4871% +6.4212% +7.3554%]
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+multiple_records_decode/100
+                        time:   [3.8861 µs 3.9002 µs 3.9204 µs]
+                        thrpt:  [25.507 Melem/s 25.640 Melem/s 25.733 Melem/s]
+                 change:
+                        time:   [−9.2494% −8.2971% −7.4263%] (p = 0.00 < 0.05)
+                        thrpt:  [+8.0220% +9.0478% +10.192%]
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+multiple_records_decode/500
+                        time:   [20.455 µs 20.524 µs 20.600 µs]
+                        thrpt:  [24.272 Melem/s 24.362 Melem/s 24.443 Melem/s]
+                 change:
+                        time:   [−2.8773% −2.6056% −2.3152%] (p = 0.00 < 0.05)
+                        thrpt:  [+2.3701% +2.6754% +2.9626%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
+multiple_records_decode/1000
+                        time:   [40.718 µs 40.769 µs 40.846 µs]
+                        thrpt:  [24.482 Melem/s 24.528 Melem/s 24.559 Melem/s]
+                 change:
+                        time:   [−26.055% −22.994% −19.710%] (p = 0.00 < 0.05)
+                        thrpt:  [+24.549% +29.860% +35.237%]
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low severe
+  3 (3.00%) low mild
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+
+Running rpmalloc secure benchmarks...
+PLEASE NOTE, THERE ARE A LOT OF CONFIGURATION OPTIONS ON THIS PACKAGE THAT I HAVENT PUT INTO THE BUILD
+
+running 37 tests
+test pinset::codec::tests::empty_data_serialisation ... ignored
+test pinset::codec::tests::error_handling_invalid_data ... ignored
+test pinset::codec::tests::header_tlv_round_trip_all_fields ... ignored
+test pinset::codec::tests::header_tlv_round_trip_no_optionals ... ignored
+test pinset::codec::tests::header_tlv_unknown_tag_error ... ignored
+test pinset::codec::tests::large_data_serialisation ... ignored
+test pinset::codec::tests::pinset_record_no_expiration ... ignored
+test pinset::codec::tests::pinset_record_pq_hybrid_tofu ... ignored
+test pinset::codec::tests::pinset_record_round_trip ... ignored
+test pinset::codec::tests::round_trip_buffered ... ignored
+test pinset::codec::tests::round_trip_streaming ... ignored
+test pinset::helpers::generic_array::generic_array_functionality ... ignored
+test pinset::keychain::test_binary_secret_storage ... ignored
+test pinset::keychain::test_default_keychain ... ignored
+test pinset::keychain::test_delete_nonexistent_key ... ignored
+test pinset::keychain::test_kek_identifier_for_store ... ignored
+test pinset::keychain::test_key_attributes_builder ... ignored
+test pinset::keychain::test_key_exists ... ignored
+test pinset::keychain::test_key_identifier_builder ... ignored
+test pinset::keychain::test_key_identifier_creation ... ignored
+test pinset::keychain::test_key_identifier_unique_string ... ignored
+test pinset::keychain::test_keychain_creation ... ignored
+test pinset::keychain::test_platform_info ... ignored
+test pinset::keychain::test_retrieve_nonexistent_key ... ignored
+test pinset::keychain::test_secure_key_creation ... ignored
+test pinset::keychain::test_secure_key_debug ... ignored
+test pinset::keychain::test_secure_key_from_slice ... ignored
+test pinset::keychain::test_secure_key_from_vec ... ignored
+test pinset::keychain::test_store_and_retrieve_key ... ignored
+test pinset::keychain::test_store_duplicate_key ... ignored
+test pinset::keychain::test_update_key ... ignored
+test pinset::keychain::test_update_nonexistent_key ... ignored
+test pinset::types::tests::aead_algorithm_nonce_lengths ... ignored
+test pinset::types::tests::datetime_edge_cases ... ignored
+test pinset::types::tests::pinset_header_builder_patterns ... ignored
+test pinset::types::tests::pinset_header_validation ... ignored
+test pinset::types::tests::pinset_record_is_active ... ignored
+
+test result: ok. 0 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+header_encode           time:   [72.804 ns 74.629 ns 77.068 ns]
+                        change: [+1.3683% +7.6084% +14.379%] (p = 0.02 < 0.05)
+                        Performance has regressed.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
+header_decode           time:   [47.364 ns 47.519 ns 47.707 ns]
+                        change: [+5.2756% +5.7615% +6.2260%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+
+header_roundtrip        time:   [121.85 ns 122.09 ns 122.34 ns]
+                        change: [−0.0263% +1.6935% +3.2938%] (p = 0.04 < 0.05)
+                        Change within noise threshold.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+record_encode           time:   [69.037 ns 69.129 ns 69.229 ns]
+                        change: [+3.4064% +5.1262% +7.2784%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  1 (1.00%) low severe
+  1 (1.00%) low mild
+  1 (1.00%) high mild
+  6 (6.00%) high severe
+
+record_decode           time:   [47.241 ns 47.524 ns 47.867 ns]
+                        change: [+4.4927% +5.0562% +5.5906%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) high mild
+  4 (4.00%) high severe
+
+record_roundtrip        time:   [111.65 ns 111.96 ns 112.31 ns]
+                        change: [−2.3434% −2.0524% −1.7319%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 12 outliers among 100 measurements (12.00%)
+  6 (6.00%) high mild
+  6 (6.00%) high severe
+
+record_encode_key_sizes/32
+                        time:   [69.859 ns 70.070 ns 70.321 ns]
+                        thrpt:  [433.98 MiB/s 435.53 MiB/s 436.85 MiB/s]
+                 change:
+                        time:   [−34.588% −34.387% −34.177%] (p = 0.00 < 0.05)
+                        thrpt:  [+51.923% +52.408% +52.876%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high mild
+record_encode_key_sizes/64
+                        time:   [69.379 ns 69.527 ns 69.682 ns]
+                        thrpt:  [875.92 MiB/s 877.86 MiB/s 879.73 MiB/s]
+                 change:
+                        time:   [+2.5058% +2.8796% +3.3006%] (p = 0.00 < 0.05)
+                        thrpt:  [−3.1951% −2.7990% −2.4445%]
+                        Performance has regressed.
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+record_encode_key_sizes/128
+                        time:   [89.919 ns 90.576 ns 91.352 ns]
+                        thrpt:  [1.3049 GiB/s 1.3161 GiB/s 1.3257 GiB/s]
+                 change:
+                        time:   [+7.0721% +7.7769% +8.4916%] (p = 0.00 < 0.05)
+                        thrpt:  [−7.8270% −7.2157% −6.6050%]
+                        Performance has regressed.
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
+record_encode_key_sizes/256
+                        time:   [94.435 ns 95.860 ns 97.749 ns]
+                        thrpt:  [2.4391 GiB/s 2.4871 GiB/s 2.5247 GiB/s]
+                 change:
+                        time:   [+11.936% +16.524% +21.392%] (p = 0.00 < 0.05)
+                        thrpt:  [−17.622% −14.181% −10.663%]
+                        Performance has regressed.
+Found 23 outliers among 100 measurements (23.00%)
+  1 (1.00%) low mild
+  2 (2.00%) high mild
+  20 (20.00%) high severe
+record_encode_key_sizes/512
+                        time:   [130.89 ns 136.50 ns 142.11 ns]
+                        thrpt:  [3.3554 GiB/s 3.4933 GiB/s 3.6429 GiB/s]
+                 change:
+                        time:   [+50.667% +53.941% +56.711%] (p = 0.00 < 0.05)
+                        thrpt:  [−36.188% −35.040% −33.628%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  8 (8.00%) low severe
+record_encode_key_sizes/1024
+                        time:   [111.18 ns 111.46 ns 111.73 ns]
+                        thrpt:  [8.5354 GiB/s 8.5560 GiB/s 8.5781 GiB/s]
+                 change:
+                        time:   [+13.395% +13.705% +14.023%] (p = 0.00 < 0.05)
+                        thrpt:  [−12.298% −12.053% −11.812%]
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+record_decode_key_sizes/32
+                        time:   [49.372 ns 49.699 ns 50.042 ns]
+                        thrpt:  [609.83 MiB/s 614.05 MiB/s 618.11 MiB/s]
+                 change:
+                        time:   [+6.7681% +7.4727% +8.1637%] (p = 0.00 < 0.05)
+                        thrpt:  [−7.5475% −6.9531% −6.3391%]
+                        Performance has regressed.
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+record_decode_key_sizes/64
+                        time:   [56.356 ns 56.537 ns 56.741 ns]
+                        thrpt:  [1.0505 GiB/s 1.0543 GiB/s 1.0576 GiB/s]
+                 change:
+                        time:   [+5.6246% +6.0548% +6.5238%] (p = 0.00 < 0.05)
+                        thrpt:  [−6.1243% −5.7091% −5.3251%]
+                        Performance has regressed.
+Found 11 outliers among 100 measurements (11.00%)
+  8 (8.00%) high mild
+  3 (3.00%) high severe
+record_decode_key_sizes/128
+                        time:   [88.361 ns 88.628 ns 88.890 ns]
+                        thrpt:  [1.3411 GiB/s 1.3451 GiB/s 1.3491 GiB/s]
+                 change:
+                        time:   [+18.116% +21.591% +25.203%] (p = 0.00 < 0.05)
+                        thrpt:  [−20.130% −17.757% −15.337%]
+                        Performance has regressed.
+Found 23 outliers among 100 measurements (23.00%)
+  2 (2.00%) low severe
+  2 (2.00%) low mild
+  7 (7.00%) high mild
+  12 (12.00%) high severe
+record_decode_key_sizes/256
+                        time:   [101.26 ns 105.04 ns 108.27 ns]
+                        thrpt:  [2.2021 GiB/s 2.2698 GiB/s 2.3546 GiB/s]
+                 change:
+                        time:   [+10.988% +13.885% +16.464%] (p = 0.00 < 0.05)
+                        thrpt:  [−14.137% −12.192% −9.8998%]
+                        Performance has regressed.
+Found 23 outliers among 100 measurements (23.00%)
+  22 (22.00%) high mild
+  1 (1.00%) high severe
+record_decode_key_sizes/512
+                        time:   [178.54 ns 179.51 ns 180.74 ns]
+                        thrpt:  [2.6382 GiB/s 2.6563 GiB/s 2.6707 GiB/s]
+                 change:
+                        time:   [+34.997% +35.615% +36.270%] (p = 0.00 < 0.05)
+                        thrpt:  [−26.616% −26.262% −25.924%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) low severe
+  4 (4.00%) high severe
+record_decode_key_sizes/1024
+                        time:   [225.26 ns 226.94 ns 228.95 ns]
+                        thrpt:  [4.1654 GiB/s 4.2023 GiB/s 4.2337 GiB/s]
+                 change:
+                        time:   [+4.3570% +6.9094% +9.4338%] (p = 0.00 < 0.05)
+                        thrpt:  [−8.6205% −6.4628% −4.1751%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+
+multiple_records_encode/10
+                        time:   [777.27 ns 802.89 ns 832.69 ns]
+                        thrpt:  [12.009 Melem/s 12.455 Melem/s 12.866 Melem/s]
+                 change:
+                        time:   [+8.1737% +11.484% +15.041%] (p = 0.00 < 0.05)
+                        thrpt:  [−13.075% −10.301% −7.5560%]
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) high mild
+  7 (7.00%) high severe
+multiple_records_encode/50
+                        time:   [3.5274 µs 3.7045 µs 3.8927 µs]
+                        thrpt:  [12.844 Melem/s 13.497 Melem/s 14.175 Melem/s]
+                 change:
+                        time:   [+0.8560% +2.8846% +5.3005%] (p = 0.01 < 0.05)
+                        thrpt:  [−5.0337% −2.8038% −0.8488%]
+                        Change within noise threshold.
+Found 8 outliers among 100 measurements (8.00%)
+  8 (8.00%) high severe
+multiple_records_encode/100
+                        time:   [7.3654 µs 7.5830 µs 7.8627 µs]
+                        thrpt:  [12.718 Melem/s 13.187 Melem/s 13.577 Melem/s]
+                 change:
+                        time:   [−27.254% −24.166% −20.683%] (p = 0.00 < 0.05)
+                        thrpt:  [+26.076% +31.868% +37.464%]
+                        Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) high mild
+  4 (4.00%) high severe
+multiple_records_encode/500
+                        time:   [35.409 µs 35.929 µs 36.624 µs]
+                        thrpt:  [13.652 Melem/s 13.916 Melem/s 14.121 Melem/s]
+                 change:
+                        time:   [−25.819% −22.360% −18.141%] (p = 0.00 < 0.05)
+                        thrpt:  [+22.162% +28.799% +34.806%]
+                        Performance has improved.
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+multiple_records_encode/1000
+                        time:   [93.899 µs 96.440 µs 98.403 µs]
+                        thrpt:  [10.162 Melem/s 10.369 Melem/s 10.650 Melem/s]
+                 change:
+                        time:   [+19.991% +23.902% +28.327%] (p = 0.00 < 0.05)
+                        thrpt:  [−22.074% −19.291% −16.660%]
+                        Performance has regressed.
+
+multiple_records_decode/10
+                        time:   [509.88 ns 543.48 ns 576.35 ns]
+                        thrpt:  [17.351 Melem/s 18.400 Melem/s 19.612 Melem/s]
+                 change:
+                        time:   [+27.642% +32.557% +37.513%] (p = 0.00 < 0.05)
+                        thrpt:  [−27.280% −24.561% −21.656%]
+                        Performance has regressed.
+multiple_records_decode/50
+                        time:   [2.1066 µs 2.1215 µs 2.1393 µs]
+                        thrpt:  [23.372 Melem/s 23.568 Melem/s 23.735 Melem/s]
+                 change:
+                        time:   [+6.5051% +7.4479% +8.2931%] (p = 0.00 < 0.05)
+                        thrpt:  [−7.6580% −6.9317% −6.1078%]
+                        Performance has regressed.
+Found 15 outliers among 100 measurements (15.00%)
+  6 (6.00%) high mild
+  9 (9.00%) high severe
+multiple_records_decode/100
+                        time:   [4.1599 µs 4.1765 µs 4.1961 µs]
+                        thrpt:  [23.832 Melem/s 23.943 Melem/s 24.039 Melem/s]
+                 change:
+                        time:   [+6.6193% +7.1336% +7.6451%] (p = 0.00 < 0.05)
+                        thrpt:  [−7.1021% −6.6586% −6.2084%]
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+multiple_records_decode/500
+                        time:   [22.930 µs 23.715 µs 24.671 µs]
+                        thrpt:  [20.267 Melem/s 21.084 Melem/s 21.805 Melem/s]
+                 change:
+                        time:   [+25.252% +29.414% +33.834%] (p = 0.00 < 0.05)
+                        thrpt:  [−25.280% −22.729% −20.161%]
+                        Performance has regressed.
+multiple_records_decode/1000
+                        time:   [42.749 µs 43.124 µs 43.571 µs]
+                        thrpt:  [22.951 Melem/s 23.189 Melem/s 23.392 Melem/s]
+                 change:
+                        time:   [+4.6538% +5.1996% +5.8516%] (p = 0.00 < 0.05)
+                        thrpt:  [−5.5281% −4.9426% −4.4469%]
+                        Performance has regressed.
+Found 12 outliers among 100 measurements (12.00%)
+  3 (3.00%) high mild
+  9 (9.00%) high severe
+
+All benchmarks completed! Results saved to ./alloc_benches/
