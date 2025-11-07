@@ -32,10 +32,15 @@ elif [[ "$OS" == "darwin" ]]; then
   sysctl -a | grep machdep.cpu > "${OUT}/cpu.txt" || true
   sw_vers > "${OUT}/os.txt" || true
   uname -a > "${OUT}/kernel.txt"
+elif [[ "$OS" == mingw* || "$OS" == msys* ]]; then
+  OS="windows"
+  uname -a > "${OUT}/kernel.txt"
 else
   echo "Unsupported OS: $OS" >&2
   exit 1
 fi
+
+
 
 cargo build --release
 
