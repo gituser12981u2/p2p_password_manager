@@ -50,7 +50,9 @@ fi
 
 # Copy only the portable artifacts
 rsync -a --prune-empty-dirs \
+  --filter='- **/new/**' \
   --include '*/' \
+  --include 'report/index.html' \
   --include 'estimates.json' \
   --include 'benchmark.json' \
   --include 'raw.csv' \
