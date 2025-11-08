@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
+cd "$(dirname "$0")"
+
 BENCH_DIR=./alloc_benches
 
 mkdir -p $BENCH_DIR
 
-echo "Running standard allocator benchmarks"
+echo -e "-------\n------------\nRunning standard allocator benchmarks"
 cargo bench 
 cp -r ../../target/criterion $BENCH_DIR/std_results
 
@@ -58,6 +60,7 @@ cargo bench --features rpmalloc
 cp -r ../../target/criterion $BENCH_DIR/rpmalloc_results
 
 
+echo "ALL BENCHMARKS DONE"
 #commented out because this shit broken as hell
 
 # FREEGUARD_PATH=./FreeGuard/libfreeguard.so
@@ -76,38 +79,3 @@ cp -r ../../target/criterion $BENCH_DIR/rpmalloc_results
 # LD_PRELOAD="$FREEGUARD_PATH" cargo bench
 # cp -r ../../target/criterion $BENCH_DIR/freeguard_results
 
-
-
-
-
-echo "All benchmarks completed! Results saved to $BENCH_DIR/"
-#!/usr/bin/env bash
-
-BENCH_DIR=./alloc_benches
-
-mkdir -p $BENCH_DIR
-
-echo "Running jemalloc benchmarks..."
-cargo bench --features jemallocator
-cp -r ../../target/criterion $BENCH_DIR/jemalloc_results
-
-
-echo "Running mimalloc benchmarks..."
-cargo bench --features mimalloc
-cp -r ../../target/criterion $BENCH_DIR/mimalloc_results
-
-echo "Running mimalloc secure benchmarks..."
-cargo bench --features mimalloc-secure
-cp -r ../../target/criterion $BENCH_DIR/mimalloc_secure_results
-
-
-echo "Running scudo benchmarks..."
-cargo bench --features scudo
-cp -r ../../target/criterion $BENCH_DIR/scudo_results
-
-
-echo "Running snmalloc benchmarks..."
-cargo bench --features snmalloc
-cp -r ../../target/criterion $BENCH_DIR/snmalloc_results
-
-echo "All benchmarks completed! Results saved to $BENCH_DIR/"
