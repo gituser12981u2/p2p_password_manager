@@ -27,11 +27,12 @@ mimalloc-v3 = ["dep:mimalloc", "mimalloc/v3"]
 mimalloc-v3-secure = ["dep:mimalloc", "mimalloc/v3", "mimalloc/secure"]
 jemallocator = ["dep:jemallocator"]
 scudo = ["dep:scudo"]
-snmalloc = ["dep:snmalloc-rs", "snmalloc-rs/native-cpu"]
+snmalloc = ["dep:snmalloc-rs", "snmalloc-rs/native-cpu","snmalloc-rs/lto"]
 snmalloc-secure = [
   "dep:snmalloc-rs",
   "snmalloc-rs/native-cpu",
   "snmalloc-rs/check",
+  "snmalloc-rs/lto"
 ]
 tcmalloc = ["dep:tcmalloc"]
 rpmalloc = ["dep:rpmalloc"]
