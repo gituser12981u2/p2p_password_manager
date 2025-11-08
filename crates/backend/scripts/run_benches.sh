@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+[ "$(basename "$PWD")" != "backend" ] && { echo "Please run from the backend directory  as './scripts/run_benches.sh'"; exit 1; }
+
+
 # Locate repo root
 SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
@@ -64,6 +67,6 @@ rsync -a --prune-empty-dirs \
   --exclude '*' \
   "$CRITERION_DIR/" "${OUT}/criterion/"
 
-echo "Saved to: ${OUT}"
-echo "Baseline: ${BASELINE}"
-echo "From: ${CRITERION_DIR}"
+echo "Saved to: $(realpath "${OUT}")"
+echo "Baseline: $(realpath "${BASELINE}")"
+echo "From: $(realpath "${CRITERION_DIR}")"
