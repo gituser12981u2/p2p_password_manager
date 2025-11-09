@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-[ "$(basename "$PWD")" != "backend" ] && { echo "Please run from the backend directory  as './scripts/run_benches.sh'"; exit 1; }
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+
+cd $PARENT_DIR
+
 
 
 # Locate repo root
