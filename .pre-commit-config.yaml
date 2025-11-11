@@ -23,3 +23,10 @@ repos:
         language: system
         files: \.rs$
         pass_filenames: false
+      - id: cargo-test
+        name: Cargo Test
+        description: Run Rust tests
+        entry: cargo test
+        language: system
+        files: \.rs$
+        pass_filenames: false
