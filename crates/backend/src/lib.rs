@@ -1,9 +1,6 @@
 pub mod node;
 pub mod pinset;
 
-
-
-
 #[cfg(any(
     feature = "mimalloc",
     feature = "mimalloc-secure",
@@ -13,22 +10,22 @@ pub mod pinset;
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-#[cfg(feature="jemallocator")]
+#[cfg(feature = "jemallocator")]
 #[global_allocator]
-static GLOBAL:jemallocator::Jemalloc=jemallocator::Jemalloc;
+static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
-#[cfg(feature="scudo")]
+#[cfg(feature = "scudo")]
 #[global_allocator]
-static GLOBAL:scudo::GlobalScudoAllocator=scudo::GlobalScudoAllocator;
+static GLOBAL: scudo::GlobalScudoAllocator = scudo::GlobalScudoAllocator;
 
-#[cfg(any(feature="snmalloc",feature="snmalloc-secure"))]
+#[cfg(any(feature = "snmalloc", feature = "snmalloc-secure"))]
 #[global_allocator]
 static GLOBAL: snmalloc_rs::SnMalloc = snmalloc_rs::SnMalloc;
 
-#[cfg(feature="tcmalloc")]
+#[cfg(feature = "tcmalloc")]
 #[global_allocator]
 static GLOBAL: tcmalloc::TCMalloc = tcmalloc::TCMalloc;
 
-#[cfg(feature="rpmalloc")]
+#[cfg(feature = "rpmalloc")]
 #[global_allocator]
 static GLOBAL: rpmalloc::RpMalloc = rpmalloc::RpMalloc;

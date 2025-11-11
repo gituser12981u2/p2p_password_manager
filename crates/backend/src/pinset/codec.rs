@@ -1,10 +1,10 @@
 /*!
-  Codec for encoding and decoding pinset data structures.
- 
-  This module implements TLV (Type-Length-Value) encoding/decoding for pinset headers
-  and records, providing a binary serialization format for secure storage of peer
-  identity pinning information.
- */
+ Codec for encoding and decoding pinset data structures.
+
+ This module implements TLV (Type-Length-Value) encoding/decoding for pinset headers
+ and records, providing a binary serialization format for secure storage of peer
+ identity pinning information.
+*/
 
 use crate::pinset::types::{
     AeadAlgorithm, KeySource, KeyType, MAGIC, PinsetError, PinsetFlags, PinsetHeader, PinsetRecord,
@@ -30,21 +30,21 @@ const TLV_END: u8 = 0x7F;
 
  Implementers can serialize themselves to a writer or to a byte vector.
 */
-pub trait TlvEncode {
+pub(crate) trait TlvEncode {
     /**
      Encode this value to the provided writer.
-    
+
      # Arguments
      `w` - The writer to encode into
-    
+
      # Errors
      Returns an error if writing fails or if the data is invalid.
     */
     fn encode_to<W: Write>(&self, w: W) -> Result<()>;
-    
+
     /**
      Encode this value to a new byte vector.
-    
+
      # Errors
      Returns an error if encoding fails or if the data is invalid.
     */
@@ -58,24 +58,24 @@ pub trait TlvEncode {
 /** Trait for decoding data structures from TLV binary format.
 
  Implementers can deserialize themselves from a reader or from a byte slice.
-*/      
-pub trait TlvDecode: Sized {
+*/
+pub(crate) trait TlvDecode: Sized {
     /**
      Decode a value from the provided reader.
-    
+
      # Arguments
       `r` - The reader to decode from
-    
+
      # Errors
      Returns an error if reading fails or if the data is malformed.
     */
     fn decode_from<R: Read>(r: R) -> Result<Self>;
-    
+
     /** Decode a value from a byte slice.
-    
+
      # Arguments
       `bytes` - The byte slice to decode from
-    
+
      # Errors
      Returns an error if decoding fails or if the data is malformed.
     */
@@ -84,7 +84,11 @@ pub trait TlvDecode: Sized {
     }
 }
 
-/** 
+pub(crate) struct PinsetBody {
+    pub records: Vec<PinsetRecord>,
+}
+
+/**
  Write a TLV (Type-Length-Value) triple to a writer.
 
  # Arguments
@@ -108,7 +112,7 @@ fn write_tlv<W: Write>(mut w: W, t: u8, v: &[u8]) -> Result<()> {
     Ok(())
 }
 
-/** 
+/**
  Read exactly `len` bytes from a reader into a new vector.
 
  # Arguments
@@ -124,7 +128,7 @@ fn read_exact_into<R: Read>(mut r: R, len: usize) -> Result<Vec<u8>> {
     Ok(v)
 }
 
-/** 
+/**
  Encode a PinsetHeader to binary format.
 
  # Format
@@ -168,7 +172,6 @@ impl TlvEncode for PinsetHeader {
         Ok(())
     }
 }
-
 
 /**
   Decode a PinsetHeader from binary format.
@@ -275,7 +278,33 @@ impl TlvDecode for PinsetHeader {
     }
 }
 
-/** 
+impl TlvEncode for PinsetBody {
+    fn encode_to<W: Write>(&self, mut w: W) -> Result<()> {
+        let count = u32::try_from(self.records.len())
+            .map_err(|_| PinsetError::Invalid("Too many records "))?;
+        w.write_all(&count.to_be_bytes())?;
+        for rec in &self.records {
+            rec.write_tlv(&mut w)?;
+        }
+        Ok(())
+    }
+}
+
+impl TlvDecode for PinsetBody {
+    fn decode_from<R: Read>(mut r: R) -> Result<Self> {
+        let mut count_bytes = [0u8; 4];
+        r.read_exact(&mut count_bytes)?;
+        let count = u32::from_be_bytes(count_bytes) as usize;
+
+        let mut records = Vec::with_capacity(count);
+        for _ in 0..count {
+            records.push(PinsetRecord::read_tlv(&mut r)?);
+        }
+        Ok(Self { records })
+    }
+}
+
+/**
  Encode a PinsetRecord to binary format.
 
  # Format
