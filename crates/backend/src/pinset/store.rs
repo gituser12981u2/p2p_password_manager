@@ -124,30 +124,28 @@ pub enum PinsetStoreError {
 ///
 /// Creating a store, adding a record, saving, and reopening:
 ///
-/// ```no_run
+/// ```
 /// use chrono::Utc;
-/// use pinset::pinset::store::PinsetStore;
-/// use pinset::pinset::types::{PinsetRecord, KeyType, PinsetFlags};
-///
+/// 
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let path = std::env::temp_dir().join("pinset-store-example.pset");
 ///
 /// // Create a new store backed by the OS keychain.
-/// let mut store = PinsetStore::create_os_keystore(&path)?;
+/// let mut store = backend::pinset::store::PinsetStore::create_os_keystore(&path)?;
 ///
 /// // Add a record for some peer.
-/// let record = PinsetRecord::new(
+/// let record = backend::pinset::types::PinsetRecord::new(
 ///     [0u8; 32],
-///     KeyType::Ed25519,
+///     backend::pinset::types::KeyType::Ed25519,
 ///     vec![1, 2, 3, 4],
 ///     Utc::now(),
-///     PinsetFlags::ACTIVE,
+///     backend::pinset::types::PinsetFlags::ACTIVE,
 /// );
 /// store.add_record(record);
 /// store.save()?;
 ///
 /// // Later, reopen and read records.
-/// let reopened = PinsetStore::open(&path, None)?;
+/// let reopened = backend::pinset::store::PinsetStore::open(&path, None)?;
 /// assert_eq!(reopened.records().len(), 1);
 /// # Ok(())
 /// # }

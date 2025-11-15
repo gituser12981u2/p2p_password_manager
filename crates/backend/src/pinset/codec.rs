@@ -71,14 +71,15 @@ pub(crate) trait TlvDecode: Sized {
     */
     fn decode_from<R: Read>(r: R) -> Result<Self>;
 
-    /** Decode a value from a byte slice.
-
-     # Arguments
-      `bytes` - The byte slice to decode from
-
-     # Errors
-     Returns an error if decoding fails or if the data is malformed.
-    */
+    /// Decode a value from a byte slice.
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes` - The byte slice to decode from
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if decoding fails or if the data is malformed.
     fn decode(bytes: &[u8]) -> Result<Self> {
         Self::decode_from(std::io::Cursor::new(bytes))
     }
@@ -116,7 +117,7 @@ fn write_tlv<W: Write>(mut w: W, t: u8, v: &[u8]) -> Result<()> {
  Read exactly `len` bytes from a reader into a new vector.
 
  # Arguments
-  `r` - The reader to read from
+  `r`` - The reader to read from
   `len` - The number of bytes to read
 
  # Errors
