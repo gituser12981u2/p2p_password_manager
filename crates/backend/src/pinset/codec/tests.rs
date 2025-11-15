@@ -22,8 +22,8 @@ fn round_trip_streaming() {
     let mut buf = Vec::new();
 
     // write/read via streaming API
-    header.write_to(&mut buf).expect("write_to");
-    let read_back = PinsetHeader::from_reader(Cursor::new(&buf)).expect("from_reader");
+    header.write_tlv(&mut buf).expect("write_to");
+    let read_back = PinsetHeader::read_tlv(Cursor::new(&buf)).expect("from_reader");
     assert_eq!(read_back, header);
 }
 
@@ -41,8 +41,8 @@ fn round_trip_buffered() {
     )
     .build()
     .unwrap();
-    let bytes = header.encode().expect("encode");
-    let read_back = PinsetHeader::from_reader(Cursor::new(&bytes)).expect("from_reader");
+    let bytes = header.encode_tlv().expect("encode");
+    let read_back = PinsetHeader::read_tlv(Cursor::new(&bytes)).expect("from_reader");
     assert_eq!(read_back, header)
 }
 
@@ -65,9 +65,9 @@ fn header_tlv_round_trip_all_fields() {
     .expect("build");
 
     let mut buf = Vec::new();
-    header.write_to(&mut buf).expect("encode");
+    header.write_tlv(&mut buf).expect("encode");
 
-    let round = PinsetHeader::from_reader(Cursor::new(&buf)).expect("decode");
+    let round = PinsetHeader::read_tlv(Cursor::new(&buf)).expect("decode");
     assert_eq!(round.version, 1);
     assert_eq!(round.aead_alg as u8, header.aead_alg as u8);
     assert_eq!(round.key_source as u8, header.key_source as u8);
@@ -100,8 +100,8 @@ fn header_tlv_round_trip_no_optionals() {
     .expect("build");
 
     let mut buf = Vec::new();
-    header.write_to(&mut buf).expect("encode");
-    let round = PinsetHeader::from_reader(Cursor::new(&buf)).expect("decode");
+    header.write_tlv(&mut buf).expect("encode");
+    let round = PinsetHeader::read_tlv(Cursor::new(&buf)).expect("decode");
 
     assert_eq!(round.version, 1);
     assert!(round.kdf.is_none());
@@ -124,7 +124,7 @@ fn header_tlv_unknown_tag_error() {
     .build()
     .expect("build");
 
-    let buf = header.encode().expect("encode");
+    let buf = header.encode_tlv().expect("encode");
 
     assert_eq!(buf.last().copied(), Some(0x7F));
     let end_pos = buf.len() - 1;
@@ -137,7 +137,7 @@ fn header_tlv_unknown_tag_error() {
     injected.extend_from_slice(&[0x01, 0x02, 0x03]);
     injected.push(0x7F);
 
-    let err = PinsetHeader::from_reader(Cursor::new(&injected)).unwrap_err();
+    let err = PinsetHeader::read_tlv(Cursor::new(&injected)).unwrap_err();
     match err {
         PinsetError::Invalid(msg) => assert!(msg.contains("unknown")),
         _ => panic!("expected Invalid(..) for unknown tlv tag, got {:?}", err),
@@ -163,8 +163,8 @@ fn pinset_record_round_trip() {
     .with_expiration(later);
 
     // rest round-trip  serialisation protocol
-    let bytes = record.encode().expect("encode record");
-    let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode record");
+    let bytes = record.encode_tlv().expect("encode record");
+    let decoded = PinsetRecord::read_tlv(Cursor::new(&bytes)).expect("decode record");
 
     assert_eq!(decoded.peer_id, record.peer_id);
     assert_eq!(decoded.key_type, record.key_type);
@@ -201,8 +201,8 @@ fn pinset_record_no_expiration() {
     );
 
     // check serialisation without expiration
-    let bytes = record.encode().expect("encode record");
-    let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode record");
+    let bytes = record.encode_tlv().expect("encode record");
+    let decoded = PinsetRecord::read_tlv(Cursor::new(&bytes)).expect("decode record");
 
     assert_eq!(decoded.peer_id, record.peer_id);
     assert_eq!(decoded.key_type, record.key_type);
@@ -235,8 +235,8 @@ fn pinset_record_pq_hybrid_tofu() {
     .with_expiration(expires);
 
     // test round-trip with PQ hybrid and TOFU flags
-    let bytes = record.encode().expect("encode record");
-    let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode record");
+    let bytes = record.encode_tlv().expect("encode record");
+    let decoded = PinsetRecord::read_tlv(Cursor::new(&bytes)).expect("decode record");
 
     assert_eq!(decoded.peer_id, record.peer_id);
     assert_eq!(decoded.key_type, record.key_type);
@@ -268,8 +268,8 @@ fn large_data_serialisation() {
     );
 
     // serialisation and deserialisation with large data
-    let bytes = record.encode().expect("encode large record");
-    let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode large record");
+    let bytes = record.encode_tlv().expect("encode large record");
+    let decoded = PinsetRecord::read_tlv(Cursor::new(&bytes)).expect("decode large record");
 
     assert_eq!(decoded.peer_id, large_peer_id);
     assert_eq!(&**decoded.key_data, large_key_data);
@@ -287,8 +287,8 @@ fn empty_data_serialisation() {
     let peer_id = [0u8; 32];
     let record = PinsetRecord::new(peer_id, KeyType::Ed25519, vec![], now, PinsetFlags::ACTIVE);
 
-    let bytes = record.encode().expect("encode empty record");
-    let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode empty record");
+    let bytes = record.encode_tlv().expect("encode empty record");
+    let decoded = PinsetRecord::read_tlv(Cursor::new(&bytes)).expect("decode empty record");
 
     assert_eq!(decoded.peer_id, [0u8; 32]);
     assert_eq!(&**decoded.key_data, &[]);
@@ -299,7 +299,7 @@ fn empty_data_serialisation() {
 #[test]
 fn error_handling_invalid_data() {
     let truncated_data = vec![0x00, 0x01]; // Only 2 bytes
-    let result = PinsetRecord::from_reader(Cursor::new(truncated_data));
+    let result = PinsetRecord::read_tlv(Cursor::new(truncated_data));
     assert!(result.is_err());
 
     // Test with invalid key type - using 32-byte peer_id
@@ -308,7 +308,7 @@ fn error_handling_invalid_data() {
     ];
     invalid_key_type_data.extend_from_slice(&[b'p'; 32]); // 32-byte peer_id
     invalid_key_type_data.push(0xFF); // Invalid key type
-    let result = PinsetRecord::from_reader(Cursor::new(invalid_key_type_data));
+    let result = PinsetRecord::read_tlv(Cursor::new(invalid_key_type_data));
     assert!(result.is_err());
 
     // Test with invalid flags - using 32-byte peer_id
@@ -322,13 +322,13 @@ fn error_handling_invalid_data() {
     valid_data.push(0x00); // has_expires = false
     valid_data.push(0x08); // Invalid flags value - bit not defined in our bitflags
 
-    let result = PinsetRecord::from_reader(Cursor::new(valid_data));
+    let result = PinsetRecord::read_tlv(Cursor::new(valid_data));
     assert!(result.is_err());
 
     // Test with invalid peer_id length (not 32 bytes)
     let invalid_peer_id_len_data = vec![
         0x00, 0x10, // peer_id_len = 16 (should be 32)
     ];
-    let result = PinsetRecord::from_reader(Cursor::new(invalid_peer_id_len_data));
+    let result = PinsetRecord::read_tlv(Cursor::new(invalid_peer_id_len_data));
     assert!(result.is_err());
 }

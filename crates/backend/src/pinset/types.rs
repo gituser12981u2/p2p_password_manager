@@ -30,7 +30,7 @@ flags (u8)                         // bitmask
 
 */
 
-use crate::pinset::codec::{TlvDecode, TlvEncode};
+use crate::pinset::codec::{PinsetBody, TlvDecode, TlvEncode};
 use bitflags::bitflags;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -201,19 +201,20 @@ impl PinsetHeader {
         Ok(())
     }
 
-    pub fn encode(&self) -> Result<Vec<u8>> {
+    // TODO make pub(crate)
+    pub fn encode_tlv(&self) -> Result<Vec<u8>> {
         <Self as TlvEncode>::encode(self)
     }
 
-    pub fn decode(bytes: &[u8]) -> Result<Self> {
+    pub fn decode_tlv(bytes: &[u8]) -> Result<Self> {
         <Self as TlvDecode>::decode(bytes)
     }
 
-    pub fn write_to(&self, w: impl Write) -> Result<()> {
+    pub fn write_tlv(&self, w: impl Write) -> Result<()> {
         <Self as TlvEncode>::encode_to(self, w)
     }
 
-    pub fn from_reader(r: impl Read) -> Result<Self> {
+    pub fn read_tlv(r: impl Read) -> Result<Self> {
         <Self as TlvDecode>::decode_from(r)
     }
 }
@@ -269,6 +270,18 @@ impl HeaderBuilder {
     }
 }
 
+pub(crate) fn encode_body(records: &[PinsetRecord]) -> Result<Vec<u8>> {
+    let body = PinsetBody {
+        records: records.to_vec(),
+    };
+    body.encode()
+}
+
+pub(crate) fn decode_body(bytes: &[u8]) -> Result<Vec<PinsetRecord>> {
+    let body = PinsetBody::decode(bytes)?;
+    Ok(body.records)
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PinsetRecord {
     pub peer_id: [u8; 32],
@@ -311,19 +324,20 @@ impl PinsetRecord {
         self.flags.contains(PinsetFlags::ACTIVE)
     }
 
-    pub fn encode(&self) -> Result<Vec<u8>> {
+    // TODO make pub(crate)
+    pub fn encode_tlv(&self) -> Result<Vec<u8>> {
         <Self as TlvEncode>::encode(self)
     }
 
-    pub fn decode(bytes: &[u8]) -> Result<Self> {
+    pub fn decode_tlv(bytes: &[u8]) -> Result<Self> {
         <Self as TlvDecode>::decode(bytes)
     }
 
-    pub fn write_to(&self, w: impl Write) -> Result<()> {
+    pub fn write_tlv(&self, w: impl Write) -> Result<()> {
         <Self as TlvEncode>::encode_to(self, w)
     }
 
-    pub fn from_reader(r: impl Read) -> Result<Self> {
+    pub fn read_tlv(r: impl Read) -> Result<Self> {
         <Self as TlvDecode>::decode_from(r)
     }
 }

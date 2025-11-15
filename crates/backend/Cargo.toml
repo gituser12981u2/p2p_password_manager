@@ -27,12 +27,12 @@ mimalloc-v3 = ["dep:mimalloc", "mimalloc/v3"]
 mimalloc-v3-secure = ["dep:mimalloc", "mimalloc/v3", "mimalloc/secure"]
 jemallocator = ["dep:jemallocator"]
 scudo = ["dep:scudo"]
-snmalloc = ["dep:snmalloc-rs", "snmalloc-rs/native-cpu","snmalloc-rs/lto"]
+snmalloc = ["dep:snmalloc-rs", "snmalloc-rs/native-cpu", "snmalloc-rs/lto"]
 snmalloc-secure = [
   "dep:snmalloc-rs",
   "snmalloc-rs/native-cpu",
   "snmalloc-rs/check",
-  "snmalloc-rs/lto"
+  "snmalloc-rs/lto",
 ]
 tcmalloc = ["dep:tcmalloc"]
 rpmalloc = ["dep:rpmalloc"]
@@ -75,6 +75,7 @@ tcmalloc = { version = "0.3.0", optional = true, features = [
   "bundled",
 ] } # needs to be bundled incase lacking the .so file on your system
 rpmalloc = { version = "0.2.2", optional = true }
+aes-gcm = "0.10.3"
 
 [package.metadata.cargo-allocation]
 exclusive = true

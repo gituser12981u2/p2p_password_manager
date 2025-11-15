@@ -132,8 +132,8 @@ fn datetime_edge_cases() {
     )
     .with_expiration(DateTime::from_timestamp(1, 0).unwrap());
 
-    let bytes = record.encode().expect("encode epoch record");
-    let decoded = PinsetRecord::from_reader(Cursor::new(&bytes)).expect("decode epoch record");
+    let bytes = record.encode_tlv().expect("encode epoch record");
+    let decoded = PinsetRecord::read_tlv(Cursor::new(&bytes)).expect("decode epoch record");
 
     assert_eq!(decoded.added_at.timestamp(), 0);
     assert_eq!(decoded.expires_at.unwrap().timestamp(), 1);
