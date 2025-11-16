@@ -2,6 +2,8 @@
 // #![cfg(feature = "os-keychain-tests")]
 #![cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 
+use std::time::UNIX_EPOCH;
+
 use crate::pinset::keychain::{
     KeyAttributes, KeyIdentifier, Keychain, KeychainError, SecureKey, default_keychain,
     kek_identifier_for_store,
@@ -102,7 +104,6 @@ fn test_key_attributes_builder() {
 #[test]
 fn test_secure_key_creation() {
     let data = vec![1, 2, 3, 4, 5];
-    // let key = SecureKey::new(data.clone());
     let key = SecureKey::from_slice(&data);
 
     assert_eq!(key.as_bytes(), &data[..]);
@@ -112,7 +113,6 @@ fn test_secure_key_creation() {
 
 #[test]
 fn test_secure_key_debug() {
-    // let key = SecureKey::new(vec![1, 2, 3, 4, 5]);
     let key = SecureKey::from_vec(vec![1, 2, 3, 4, 5]);
     let debug_str = format!("{key:?}");
     assert!(debug_str.contains("REDACTED"));
@@ -132,7 +132,6 @@ fn test_secure_key_from_vec() {
 #[test]
 fn test_secure_key_from_slice() {
     let data: &[u8] = &[1, 2, 3, 4];
-    // let key: SecureKey = data.into();
     let key: SecureKey = data.into();
     assert_eq!(key.as_bytes(), data);
 }
@@ -174,7 +173,6 @@ fn test_store_and_retrieve_key() {
     let keychain = Keychain::new().expect("Failed to create keychain");
 
     let test_data = vec![1, 2, 3, 4, 5, 6, 7, 8];
-    // let key = SecureKey::new(test_data.clone());
     let key = SecureKey::from_vec(test_data.clone());
 
     let identifier = KeyIdentifier::new(
@@ -233,7 +231,6 @@ fn test_key_exists() {
     assert!(!exists.unwrap());
 
     // Store a key
-    // let key = SecureKey::new(vec![1, 2, 3]);
     let key = SecureKey::from_vec(vec![1, 2, 3]);
     let attributes = KeyAttributes::new(identifier.clone());
     keychain
@@ -264,7 +261,6 @@ fn test_update_key() {
     let _ = keychain.delete_key(&identifier);
 
     // Store initial key
-    // let key1 = SecureKey::new(vec![1, 2, 3]);
     let key1 = SecureKey::from_vec(vec![1, 2, 3]);
     let attributes = KeyAttributes::new(identifier.clone());
     keychain
@@ -272,7 +268,6 @@ fn test_update_key() {
         .expect("Failed to store key");
 
     // Update with new data
-    // let key2 = SecureKey::new(vec![4, 5, 6]);
     let key2 = SecureKey::from_vec(vec![4, 5, 6]);
     let update_result = keychain.update_key(key2, attributes);
     assert!(
@@ -337,7 +332,6 @@ fn test_store_duplicate_key() {
     let _ = keychain.delete_key(&identifier);
 
     // Store first key
-    // let key1 = SecureKey::new(vec![1, 2, 3]);
     let key1 = SecureKey::from_vec(vec![1, 2, 3]);
     let attributes = KeyAttributes::new(identifier.clone());
     keychain
@@ -345,7 +339,6 @@ fn test_store_duplicate_key() {
         .expect("Failed to store first key");
 
     // Try to store again with same identifier
-    // let key2 = SecureKey::new(vec![4, 5, 6]);
     let key2 = SecureKey::from_vec(vec![4, 5, 6]);
     let result = keychain.store_key(key2, attributes);
     assert!(result.is_err());
@@ -387,7 +380,6 @@ fn test_binary_secret_storage() {
 
     // Test with binary data that's not valid UTF-8
     let binary_data = vec![0xFF, 0xFE, 0xFD, 0x00, 0x01, 0x02];
-    // let key = SecureKey::new(binary_data.clone());
     let key = SecureKey::from_vec(binary_data.clone());
 
     let identifier = KeyIdentifier::new(
@@ -415,4 +407,76 @@ fn test_binary_secret_storage() {
     keychain
         .delete_key(&identifier)
         .expect("Failed to delete key");
+}
+
+#[test]
+fn secure_key_reports_empty_correctly() {
+    let empty = SecureKey::from_vec(Vec::new());
+    assert!(empty.is_empty(), "Empty key must report is_empty == true");
+    assert_eq!(empty.len(), 0, "Empty key must report len == 0");
+
+    let non_empty = SecureKey::from_slice(&[1, 2, 3]);
+    assert!(
+        !non_empty.is_empty(),
+        "Non-empty key must report is_empty == false"
+    );
+    assert_eq!(non_empty.len(), 3, "Non-empty key must report correct len");
+}
+
+#[test]
+fn key_attributes_description_does_not_affect_storage() {
+    let keychain = Keychain::new().expect("Failed to create keychain");
+
+    let data = vec![9u8, 8, 7, 6];
+    let key = SecureKey::from_vec(data.clone());
+
+    let identifier = KeyIdentifier::new(
+        "com.p2p-password-manager.test".to_string(),
+        format!(
+            "desc-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ),
+    );
+
+    let attrs = KeyAttributes::new(identifier.clone()).with_description("Test key description");
+
+    // Clean up any existing key with this id
+    let _ = keychain.delete_key(&identifier);
+
+    // Store with description
+    keychain
+        .store_key(key, attrs)
+        .expect("Failed to store key with description");
+
+    // Retrieve and verify bytes match
+    let retrieved = keychain
+        .retrieve_key(&identifier)
+        .expect("Failed to retrieve key with description");
+    assert_eq!(retrieved.as_bytes(), &data[..]);
+
+    // Clean up
+    keychain
+        .delete_key(&identifier)
+        .expect("Failed to delete key with description");
+}
+
+#[test]
+fn platform_info_features_are_consistent() {
+    let keychain = Keychain::new().expect("Failed to create keychain");
+    let info = keychain.platform_info();
+
+    // Basic expectations: name non-empty, and we advertise cross-platform + binary secrets.
+    assert!(!info.name.is_empty(), "platform name should not be empty");
+    assert!(
+        info.features.cross_platform,
+        "cross_platform feature flag should be true"
+    );
+    assert!(
+        info.features.binary_secrets,
+        "binary_secrets feature flag should be true"
+    );
 }
