@@ -1,147 +1,228 @@
-
-/*
-
-All this test does is verify that data is kept in the proper format when encrypting and decrypting.
-
-*/
-
+/// Integration test for PinsetStore.
+///
+/// This verifies that:
+/// - A store created via `PinsetStore::create_os_keystore` writes a valid header.
+/// - The header `kek_locator` matches the derived KEK identifier (service/account).
+/// - Records can be added, saved, and reopened via `PinsetStore::open`.
+/// - The ciphertext on disk does not contain the plaintext key bytes.
+/// - Removing the KEK from the OS keychain makes the store unreadable.
 use backend::pinset::{
-    keychain::{default_keychain, KeyAttributes, SecureKey},
+    keychain::{KeyIdentifier, KeychainError, default_keychain, kek_identifier_for_store},
+    store::{PinsetStore, PinsetStoreError},
     types::{AeadAlgorithm, KeySource, KeyType, PinsetFlags, PinsetHeader, PinsetRecord},
 };
 use chrono::Utc;
 use rand::RngCore;
 use serial_test::serial;
-use std::fs;
+use std::{
+    fs::{self, File},
+    io::Read,
+    time::UNIX_EPOCH,
+};
+
+fn temp_store_path() -> std::path::PathBuf {
+    std::env::temp_dir().join(format!(
+        "pinset_store_os_keystore_{}_{}.pset",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos(),
+    ))
+}
+
+fn read_header_from(path: &std::path::Path) -> PinsetHeader {
+    let mut f = File::open(path).expect("Failed to open store file for header read");
+    PinsetHeader::read_tlv(&mut f).expect("Failed to decode header")
+}
 
 #[test]
 #[serial]
-fn test_pinset_store_with_os_keystore_integration() {
-  
+fn test_os_keystore_header_and_kek_locator() {
+    let temp_path = temp_store_path();
     let keychain = default_keychain().expect("Failed to create keychain");
-    
-    // random store ID to avoid conflicts across test runs
-    let mut store_id = [0u8; 16];
-    rand::thread_rng().fill_bytes(&mut store_id);
-    
-    //unique identifier for our KEK in the OS keychain
-    let kek_identifier = backend::pinset::keychain::kek_identifier_for_store(&store_id);
-    
-    // remove up any existing test key first
-    let _ = keychain.delete_key(&kek_identifier);
-    
-    // create a KEK that will be stored in OS keychain
-    let mut kek_bytes = vec![0u8; 32];
-    rand::thread_rng().fill_bytes(&mut kek_bytes);
-    let kek = SecureKey::from(kek_bytes.clone());
-    
-    // put KEK in the OS keychain
-    let kek_attributes = KeyAttributes::new(kek_identifier.clone());
-    let store_result = keychain.store_key(kek, kek_attributes);
+
+    PinsetStore::create_os_keystore(&temp_path).expect("Failed to create OS keystore");
+
+    // Read header
+    let header = read_header_from(&temp_path);
+    assert_eq!(header.version, 1);
+    assert_eq!(header.aead_alg, AeadAlgorithm::AesGcm);
+    assert_eq!(header.key_source, KeySource::OsKeyStore);
     assert!(
-        store_result.is_ok(),
-        "Failed to store KEK in OS keychain: {:?}",
-        store_result.err()
+        header.seq > 0,
+        "Initial seq should be greater than 0 after first save"
     );
 
-    let exists_result = keychain.key_exists(&kek_identifier);
-    assert!(
-        exists_result.is_ok() && exists_result.unwrap(),
-        "KEK should exist in OS keychain after storing"
-    );
-    
-    // get the KEK from OS keychain to verify it can be decrypted
-    let retrieved_kek_result = keychain.retrieve_key(&kek_identifier);
-    assert!(
-        retrieved_kek_result.is_ok(),
-        "Failed to retrieve KEK from OS keychain: {:?}",
-        retrieved_kek_result.err()
-    );
-    
-    let retrieved_kek = retrieved_kek_result.unwrap();
+    // Set kek_locator
+    let locator = header
+        .kek_locator
+        .as_ref()
+        .expect("kek_locator should be present for OS keystore stores");
+    let locator_str = locator
+        .to_str()
+        .expect("kek_locator should be valid UTF-8")
+        .to_owned();
+
+    // Parse kek_locator
+    let (service, account) = locator_str
+        .split_once('/')
+        .expect("kek_locator must be in the form 'service/account'");
+    let locator_id = KeyIdentifier::new(service, account);
+
+    // TODO, remember to change these functions names to either be better or more specific, like store->pinsetstore
+
+    // Derived KEK identifier from store_id should match the locator-derived identifier
+    let derived_id = kek_identifier_for_store(&header.store_id);
     assert_eq!(
-        retrieved_kek.as_bytes(),
-        &kek_bytes[..], // compare with original
-        "Retrieved KEK should match original"
+        locator_id.service, derived_id.service,
+        "kek_locator service must match kek_identifier_for_store(store_id) service"
     );
-    
- 
-    let temp_path = std::env::temp_dir().join(format!("pinset_store_test_{}.pset", std::process::id()));
-    
-  
-    let nonce = [0u8; 12]; // It's arbitrary for this use case
-    let header = PinsetHeader::builder(
-        1, 
-        AeadAlgorithm::AesGcm,
-        KeySource::OsKeyStore,
-        store_id,
-        nonce,
-    )
-    .kek_locator(&kek_identifier.to_unique_string())
-    .build()
-    .expect("Failed to build header");
- 
-    let validation_result = header.validate();
+    assert_eq!(
+        locator_id.account, derived_id.account,
+        "kek_locator account must match kek_identifier_for_store(store_id) account"
+    );
+
+    // Check that identifier exists in the OS keystore
+    let exists = keychain
+        .key_exists(&locator_id)
+        .expect("key_exists check should succeed");
     assert!(
-        validation_result.is_ok(),
-        "Header should be valid: {:?}",
-        validation_result.err()
+        exists,
+        "KEK reference by kek_locator should exist in OS keychain after storing"
     );
-    
-  
+
+    let _ = fs::remove_file(&temp_path);
+}
+
+#[test]
+#[serial]
+fn test_pinset_store_record_roundtrip_and_ciphertext() {
+    let temp_path = temp_store_path();
+
+    let mut store =
+        PinsetStore::create_os_keystore(&temp_path).expect("Failed to create OS keystore");
+    let header = read_header_from(&temp_path);
+    let seq_after_create = header.seq;
+
     let mut peer_id = [0u8; 32];
     rand::thread_rng().fill_bytes(&mut peer_id);
-    
+
+    let key_bytes = b"test_key_data_for_pinset_store".to_vec();
     let record = PinsetRecord::new(
         peer_id,
         KeyType::Ed25519,
-        b"test_key_data".to_vec(),
+        key_bytes.clone(),
         Utc::now(),
         PinsetFlags::ACTIVE,
     );
-    
-    // check if record is properly formatted
-    let record_bytes = record.encode().expect("Failed to encode record");
-    let decoded_record = PinsetRecord::from_reader(&*record_bytes).expect("Failed to decode record");
-    assert_eq!(decoded_record.peer_id, record.peer_id);
-    assert_eq!(decoded_record.key_type, record.key_type);
-    assert_eq!(decoded_record.key_data, record.key_data);
-    assert_eq!(decoded_record.flags, record.flags);
-    
-    let header_bytes = header.encode().expect("Failed to encode header");
-    
-    // check the file format is correct by reading it back
-    let mut file_data = header_bytes.clone(); // to keep original
-    let record_bytes = record.encode().expect("Failed to encode record");
-    file_data.extend_from_slice(&record_bytes);
-    
-    fs::write(&temp_path, &file_data).expect("Failed to write pinset store to file");
-    
-    //  check format is preserved
-    let read_file_data = fs::read(&temp_path).expect("Failed to read pinset store file");
+
+    store.add_record(record.clone());
+    store
+        .save()
+        .expect("Failed to save store after adding record");
+
+    // Re-read header
+    let mut f2 = File::open(&temp_path).expect("Failed to reopen store file");
+    let header2 =
+        PinsetHeader::read_tlv(&mut f2).expect("Failed to decode header after save with record");
     assert_eq!(
-        read_file_data.len(),
-        file_data.len(),
-        "File should have expected length"
+        header2.store_id, header.store_id,
+        "store_id must be stable across saves"
     );
-    
-    // check that the header portion matches the expected format by reading it back
-    let read_header = PinsetHeader::from_reader(&read_file_data[..header_bytes.len()])
-        .expect("Failed to decode header from file");
-    
-    assert_eq!(read_header.version, header.version);
-    assert_eq!(read_header.aead_alg, header.aead_alg);
-    assert_eq!(read_header.key_source, header.key_source);
-    assert_eq!(read_header.store_id, header.store_id);
-    
-    let _ = fs::remove_file(&temp_path);
-    
-    // Clean up the test key from keychain
-    let delete_result = keychain.delete_key(&kek_identifier);
+    assert_eq!(
+        header2.kek_locator, header.kek_locator,
+        "kek_locator must be stable across saves"
+    );
+    assert_eq!(
+        header2.seq,
+        seq_after_create.wrapping_add(1),
+        "seq must bump by 1 on each successful save"
+    );
+
+    // Read the ciphertext body
+    let mut ciphertext = Vec::new();
+    f2.read_to_end(&mut ciphertext)
+        .expect("Failed to read ciphertext body");
     assert!(
-        delete_result.is_ok(),
-        "Failed to delete KEK from OS keychain: {:?}",
-        delete_result.err()
+        !ciphertext.is_empty(),
+        "Ciphertext body should not be empty after adding a record"
     );
-    
+
+    // Check ciphertext does not contain plaintext
+    assert!(
+        !ciphertext
+            .windows(key_bytes.len())
+            .any(|w| w == &key_bytes[..]),
+        "Ciphertext should not contain the plaintext key bytes"
+    );
+
+    // Verify record roundtrip via high level API
+    let reopened =
+        PinsetStore::open(&temp_path, None).expect("Failed to reopen store via PinsetStore::open");
+    assert_eq!(
+        reopened.records().len(),
+        1,
+        "Reopened store should contain exactly one record"
+    );
+
+    let reopened_record = &reopened.records()[0];
+    assert_eq!(reopened_record.peer_id, record.peer_id);
+    assert_eq!(reopened_record.key_type, record.key_type);
+    assert_eq!(
+        reopened_record.flags, record.flags,
+        "Flags should round-trip correctly"
+    );
+    assert_eq!(
+        &*reopened_record.key_data, &*record.key_data,
+        "key_data should round-trip correctly through encryption/decryption"
+    );
+}
+
+#[test]
+#[serial]
+fn test_open_fails_after_kek_deleted() {
+    let temp_path = temp_store_path();
+    let keychain = default_keychain().expect("Failed to create keychain");
+
+    {
+        let mut store =
+            PinsetStore::create_os_keystore(&temp_path).expect("Failed to create OS keystore");
+
+        let mut peer_id = [0u8; 32];
+        rand::thread_rng().fill_bytes(&mut peer_id);
+
+        let record = PinsetRecord::new(
+            peer_id,
+            KeyType::Ed25519,
+            vec![1, 2, 3],
+            Utc::now(),
+            PinsetFlags::ACTIVE,
+        );
+
+        store.add_record(record.clone());
+        store
+            .save()
+            .expect("Failed to save store after adding record");
+    }
+    let header = read_header_from(&temp_path);
+    let derived_id = kek_identifier_for_store(&header.store_id);
+
+    // Delete the KEK from the keychain, then attempt to open should fail
+    keychain
+        .delete_key(&derived_id)
+        .expect("Failed to delete KEK from keychain for negative test");
+
+    let reopened_err = PinsetStore::open(&temp_path, None);
+    assert!(
+        reopened_err.is_err(),
+        "Opening a store after deleting its KEK must fail"
+    );
+
+    match reopened_err.unwrap_err() {
+        PinsetStoreError::Keychain(KeychainError::NotFound(_)) => {}
+        other => panic!("Expected Keychain::NotFound error, got: {other:?}"),
+    }
+
+    let _ = fs::remove_file(&temp_path);
 }
