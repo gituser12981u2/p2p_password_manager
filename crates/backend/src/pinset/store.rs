@@ -559,7 +559,7 @@ mod tests {
     }
 
     #[test]
-    fn os_keystore_header_kek_locator_matches_internal_identifier_and_key_exists() {
+    fn pinset_store_os_keystore_header_kek_locator_matches_internal_identifier_and_key_exists() {
         let temp_path = temp_store_path();
         PinsetStore::create_os_keystore(&temp_path).expect("Failed to create OS keystore");
         let header = read_header_from(&temp_path);
@@ -572,8 +572,6 @@ mod tests {
             .to_str()
             .expect("kek_locator should be valid UTF-8")
             .to_owned();
-
-        // TODO, remember to change these functions names to either be better or more specific, like store->pinsetstore
 
         // Derived KEK identifier from store_id should match the locator-derived identifier
         let kek_id = kek_identifier_for_store(&header.store_id);
@@ -597,7 +595,7 @@ mod tests {
     }
 
     #[test]
-    fn test_open_fails_after_kek_deleted() {
+    fn pinset_store_os_keystore_open_fails_after_kek_deleted() {
         let temp_path = temp_store_path();
 
         {

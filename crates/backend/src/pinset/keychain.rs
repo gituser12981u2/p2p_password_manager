@@ -137,25 +137,19 @@ impl KeyAttributes {
     }
 
     /// Add a description
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn with_description(mut self, desc: impl Into<Box<str>>) -> Self {
         self.description = Some(desc.into());
         self
     }
 }
 
-/// Securely stored key data with automatic zeroization
-// #[derive(Clone)]
+/// Securely stored key data with automatic zeroization.
 pub struct SecureKey {
     data: Zeroizing<Box<[u8]>>,
 }
 
 impl SecureKey {
-    // pub fn new(data: impl AsRef<[u8]>) -> Self {
-    //     Self {
-    //         data: Zeroizing::new(data.as_ref().into()),
-    //     }
-    // }
-
     /// Copy from a borrowed slice
     pub fn from_slice(s: &[u8]) -> Self {
         Self {
@@ -181,29 +175,18 @@ impl SecureKey {
     }
 
     /// Check if the key is empty
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
 }
 
 impl fmt::Debug for SecureKey {
-    //avoid sharing data but provide info
+    // Avoid sharing data but provide info
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "SecureKey([REDACTED {} bytes])", self.len())
     }
 }
-
-// impl From<Vec<u8>> for SecureKey {
-//     fn from(data: Vec<u8>) -> Self {
-//         Self::new(data)
-//     }
-// }
-
-// impl From<&[u8]> for SecureKey {
-//     fn from(data: &[u8]) -> Self {
-//         Self::new(data)
-//     }
-// }
 
 impl From<Vec<u8>> for SecureKey {
     fn from(v: Vec<u8>) -> Self {
@@ -279,6 +262,7 @@ impl Keychain {
         Ok(SecureKey::from(bytes))
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn update_key(&self, key: SecureKey, attributes: KeyAttributes) -> KeychainResult<()> {
         // Acquire lock to serialise keychain access
         let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
@@ -298,6 +282,7 @@ impl Keychain {
             .map_err(KeychainError::from)
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn delete_key(&self, identifier: &KeyIdentifier) -> KeychainResult<()> {
         // Acquire lock to serialise keychain access
         let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
@@ -308,6 +293,7 @@ impl Keychain {
     }
 
     /// Check if a key exists in the keychain
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn key_exists(&self, identifier: &KeyIdentifier) -> KeychainResult<bool> {
         // Acquire lock to serialise keychain access
         let _guard = self.lock.lock().map_err(|_| KeychainError::LockPoisoned)?;
@@ -326,6 +312,7 @@ impl Keychain {
     ///
     /// Note: The keyring crate doesn't expose detailed platform info,
     /// so this returns basic information based on the target OS.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn platform_info(&self) -> PlatformInfo {
         //no android support, annoying! To be added when keychain updates to 4.0
         #[cfg(target_os = "macos")]
@@ -366,7 +353,7 @@ impl Default for Keychain {
 }
 
 /// Information about the platform-specific keychain implementation
-#[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct PlatformInfo {
     /// Platform name
     pub name: Cow<'static, str>,
@@ -382,9 +369,11 @@ pub struct PlatformInfo {
 #[derive(Debug, Clone, Default)]
 pub struct PlatformFeatures {
     /// Works across multiple platforms
+    #[cfg_attr(not(test), allow(dead_code))]
     pub cross_platform: bool,
 
     /// Supports binary secrets (not just strings)
+    #[cfg_attr(not(test), allow(dead_code))]
     pub binary_secrets: bool,
 }
 
