@@ -1,7 +1,7 @@
 mod codec;
 mod crypto;
 mod helpers;
-pub mod keychain;
+mod keychain;
 pub mod store;
 pub mod types;
 

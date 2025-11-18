@@ -1,8 +1,81 @@
+use chrono::Utc;
+
 use crate::pinset::types::{
-    AeadAlgorithm, KeySource, KeyType, PinsetFlags, PinsetHeader, PinsetRecord,
+    AeadAlgorithm, KeySource, KeyType, PinsetFlags, PinsetHeader, PinsetRecord, decode_body,
+    encode_body,
 };
 use std::ffi::OsStr;
 use std::io::Cursor;
+
+#[test]
+fn header_tlv_roundtrip() {
+    let header = PinsetHeader::builder(
+        1,
+        AeadAlgorithm::AesGcm,
+        KeySource::OsKeyStore,
+        [1u8; 16],
+        [2u8; 12],
+    )
+    .kek_locator("com.example/service")
+    .seq(42) // The answer to life
+    .build()
+    .unwrap();
+
+    let bytes = header.encode_tlv().unwrap();
+    let decoded = PinsetHeader::decode_tlv(&bytes).unwrap();
+    assert_eq!(decoded, header);
+}
+
+#[test]
+fn body_encode_decode_roundtrip() {
+    let now = Utc::now();
+    let records = vec![
+        PinsetRecord::new(
+            [1u8; 32],
+            KeyType::Ed25519,
+            vec![1, 2],
+            now,
+            PinsetFlags::ACTIVE,
+        ),
+        PinsetRecord::new(
+            [2u8; 32],
+            KeyType::Spki,
+            vec![3, 4],
+            now,
+            PinsetFlags::RETIRED,
+        ),
+    ];
+
+    let body = encode_body(&records).unwrap();
+    let decoded = decode_body(&body).unwrap();
+
+    assert_eq!(decoded.len(), records.len());
+    for (a, b) in decoded.iter().zip(records.iter()) {
+        assert_eq!(a.peer_id, b.peer_id);
+        assert_eq!(a.peer_id, b.peer_id);
+        assert_eq!(a.key_type, b.key_type);
+        assert_eq!(a.flags, b.flags);
+        assert_eq!(&*a.key_data, &*b.key_data);
+    }
+}
+
+#[test]
+fn record_tlv_roundtrip() {
+    let record = PinsetRecord::new(
+        [3u8; 32],
+        KeyType::Ed25519,
+        b"hello".to_vec(),
+        Utc::now(),
+        PinsetFlags::ACTIVE,
+    );
+    let bytes = record.encode_tlv().unwrap();
+    let decoded = PinsetRecord::decode_tlv(&bytes).unwrap();
+
+    assert_eq!(decoded.peer_id, record.peer_id);
+    assert_eq!(decoded.key_type, record.key_type);
+    assert_eq!(decoded.flags, record.flags);
+    assert_eq!(&*decoded.key_data, &*record.key_data);
+}
 
 #[test]
 fn pinset_record_is_active() {
