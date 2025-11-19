@@ -1,1 +1,0 @@
-Darwin DESKTOP-83201.local 25.1.0 Darwin Kernel Version 25.1.0: Mon Oct 20 19:33:36 PDT 2025; root:xnu-12377.41.6~2/RELEASE_ARM64_T6030 arm64

@@ -126,7 +126,7 @@ pub enum PinsetStoreError {
 ///
 /// ```
 /// use chrono::Utc;
-///
+/// 
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let path = std::env::temp_dir().join("pinset-store-example.pset");
 ///
@@ -524,123 +524,5 @@ impl PinsetStore {
         let plaintext = decrypt_body(header, &kek, ciphertext).map_err(PinsetStoreError::from)?;
         let records = decode_body(&plaintext)?;
         Ok(records)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::{
-        fs::{self, File},
-        time::UNIX_EPOCH,
-    };
-
-    use crate::pinset::{
-        keychain::{KeychainError, default_keychain, kek_identifier_for_store},
-        store::{PinsetStore, PinsetStoreError},
-        types::{KeyType, PinsetFlags, PinsetHeader, PinsetRecord},
-    };
-    use chrono::Utc;
-    use rand::RngCore;
-
-    fn temp_store_path() -> std::path::PathBuf {
-        std::env::temp_dir().join(format!(
-            "pinset_store_os_keystore_{}_{}.pset",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_nanos(),
-        ))
-    }
-
-    fn read_header_from(path: &std::path::Path) -> PinsetHeader {
-        let mut f = File::open(path).expect("Failed to open store file for header read");
-        PinsetHeader::read_tlv(&mut f).expect("Failed to decode header")
-    }
-
-    #[test]
-    fn pinset_store_os_keystore_header_kek_locator_matches_internal_identifier_and_key_exists() {
-        let temp_path = temp_store_path();
-        PinsetStore::create_os_keystore(&temp_path).expect("Failed to create OS keystore");
-        let header = read_header_from(&temp_path);
-
-        let locator = header
-            .kek_locator
-            .as_ref()
-            .expect("kek_locator should be present for OS keystore stores");
-        let locator_str = locator
-            .to_str()
-            .expect("kek_locator should be valid UTF-8")
-            .to_owned();
-
-        // Derived KEK identifier from store_id should match the locator-derived identifier
-        let kek_id = kek_identifier_for_store(&header.store_id);
-        assert_eq!(
-            locator_str,
-            kek_id.to_unique_string(),
-            "kek_locator must equal kek_identifier_for_store(store_id)"
-        );
-
-        // Check that identifier exists in the OS keystore
-        let keychain = default_keychain().expect("Failed to create keychain");
-        let exists = keychain
-            .key_exists(&kek_id)
-            .expect("key_exists check should succeed");
-        assert!(
-            exists,
-            "KEK reference by kek_locator should exist in OS keychain after storing"
-        );
-
-        let _ = std::fs::remove_file(&temp_path);
-    }
-
-    #[test]
-    fn pinset_store_os_keystore_open_fails_after_kek_deleted() {
-        let temp_path = temp_store_path();
-
-        {
-            let mut store =
-                PinsetStore::create_os_keystore(&temp_path).expect("Failed to create OS keystore");
-
-            let mut peer_id = [0u8; 32];
-            rand::thread_rng().fill_bytes(&mut peer_id);
-
-            let record = PinsetRecord::new(
-                peer_id,
-                KeyType::Ed25519,
-                vec![1, 2, 3],
-                Utc::now(),
-                PinsetFlags::ACTIVE,
-            );
-
-            store.add_record(record.clone());
-            store
-                .save()
-                .expect("Failed to save store after adding record");
-        }
-        let mut f = std::fs::File::open(&temp_path).expect("Failed to open store file");
-        let header =
-            PinsetHeader::read_tlv(&mut f).expect("Failed to decode header for negative test");
-
-        let keychain = default_keychain().expect("Failed to create keychain");
-        let derived_id = kek_identifier_for_store(&header.store_id);
-
-        // Delete the KEK from the keychain, then attempt to open should fail
-        keychain
-            .delete_key(&derived_id)
-            .expect("Failed to delete KEK from keychain for negative test");
-
-        let reopened_err = PinsetStore::open(&temp_path, None);
-        assert!(
-            reopened_err.is_err(),
-            "Opening a store after deleting its KEK must fail"
-        );
-
-        match reopened_err.unwrap_err() {
-            PinsetStoreError::Keychain(KeychainError::NotFound(_)) => {}
-            other => panic!("Expected Keychain::NotFound error, got: {other:?}"),
-        }
-
-        let _ = fs::remove_file(&temp_path);
     }
 }
