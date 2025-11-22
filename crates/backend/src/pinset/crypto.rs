@@ -16,12 +16,12 @@
 //! These helpers enforce:
 //! - KEK must be exactly 32 bytes for AES-256-GCM.
 //! - AEAD errors (authentication failure, nonce mismatch, corrupted ciphertext) are converted into
-//! high-level [`PinsetError`](crate::pinset::types::PinsetError).
+//!   high-level [`PinsetError`](crate::pinset::types::PinsetError).
 //!
 //! # Security Notes
 //!
 //! * These functions do not generate keys or nonces themselves;
-//! they rely on `PinsetStore` to provide correct inputs.
+//!   they rely on `PinsetStore` to provide correct inputs.
 //! * AES-GCM requires unique nonces for a given key. This invariant is guaranteed by the monotonic `seq` and deterministic nonce derivation in `PinsetStore::save_inner`.
 //! * Authentication tags are stored alongside ciphertext implicitly via the AES-GCM output format.
 //!
