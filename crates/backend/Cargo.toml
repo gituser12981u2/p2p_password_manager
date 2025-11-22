@@ -16,6 +16,7 @@ criterion = { version = "0.7.0", features = [
   "cargo_bench_support",
   "real_blackbox",
   "html_reports",
+  "csv_output"
 ] }
 
 
