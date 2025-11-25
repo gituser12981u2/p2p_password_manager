@@ -30,7 +30,8 @@ flags (u8)                         // bitmask
 
 */
 
-use crate::pinset::codec::{PinsetBody, TlvDecode, TlvEncode};
+use crate::codec::{TlvDecode, TlvEncode};
+use crate::pinset::codec::PinsetBody;
 use bitflags::bitflags;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};

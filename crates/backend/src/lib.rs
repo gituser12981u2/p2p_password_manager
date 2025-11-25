@@ -1,6 +1,7 @@
+mod codec;
+pub mod file;
 pub mod node;
 pub mod pinset;
-pub mod file;
 
 #[cfg(any(
     feature = "mimalloc",
