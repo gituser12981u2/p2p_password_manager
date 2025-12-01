@@ -23,7 +23,6 @@ types:
 
 0x7F=END (Not a TLV)
 
-
 KDF_PARAMS (32 bytes total):
 
 id (u8)                  // 0x01 = Argon2id
@@ -57,15 +56,12 @@ if source_kind == 0x02 (DeviceOSKey):
 wrap_nonce (N bytes) // N implied by aead_alg
 wrapped_dek_len (u16 BE)
 wrapped_dek_ct ([wrapped_dek_len])
-
-flags (u8)
 */
 
 use bitflags::bitflags;
 use std::ffi::OsStr;
 
-// The name should be PVLT instead of PLVT, right?
-pub const MAGIC: [u8; 4] = *b"PLVT";
+pub const MAGIC: [u8; 4] = *b"PVLT";
 
 #[derive(thiserror::Error, Debug)]
 pub enum FileError {
@@ -91,34 +87,19 @@ pub enum FileError {
     Io(#[from] std::io::Error),
 }
 
-// TODO: Maybe use a more descriptive name than FileHeader
-// TODO: Why is kdf_params optional?
-// TODO: I know the spec says aead_alg is u8, but maybe we should use an enum here?
-pub struct FileHeader {
-    pub version: u8,
-    pub aead_alg: u8,
-    pub kdf: Option<Box<str>>,
-    pub kek_locator: Option<Box<OsStr>>,
-    pub seq: u64,
-    pub vault_id: [u8; 16],
-    pub nonce: [u8; 12],
-    pub kdf_params: Option<KdfParams>,
+#[repr(u8)]
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AeadAlgorithm {
+    AesGcm = 1,
 }
 
-impl FileHeader {
-    pub const fn builder(version: u8, aead_alg: u8, vault_id: [u8; 16], nonce: [u8; 12]) -> Self {
-        Self {
-            version,
-            aead_alg,
-            kdf_params: None,
-            kek_locator: None,
-            vault_id,
-            kdf: None,
-            seq: 0,
-            nonce,
+impl AeadAlgorithm {
+    pub const fn nonce_len(self) -> usize {
+        match self {
+            AeadAlgorithm::AesGcm => 12, // 96-bit GCM nonces
         }
     }
-    //TODO: should the kdf_params, kek_locator, and kdf have setters?
 }
 
 /// Argon2id parameters for password slot
@@ -130,32 +111,37 @@ impl FileHeader {
 /// * `time_cost`: iterations
 /// * `parallelism`: lanes
 pub struct KdfParams {
-    id: u8,
-    slot_id: u8,
-    salt: [u8; 16],
-    memory_cost_kib: u32,
-    time_cost: u32,
-    parallelism: u32,
-    reserved: u16,
+    pub id: u8,
+    pub slot_id: u8,
+    pub salt: [u8; 16],
+    pub memory_cost_kib: u32,
+    pub time_cost: u32,
+    pub parallelism: u32,
+    pub reserved: u16,
 }
 
-// TODO: add a #[non_exhaustive] attribute
+pub struct KekLocator {
+    pub locator_id: u8,
+    pub locator: Box<OsStr>,
+}
+
+pub struct Wrap {
+    pub slot_id: u8,
+    pub source_kind: u8, // 0x01 = Passpharse, 0x02 = DeviceOsKey
+    pub locator_id: u8,
+    pub wrap_nonce: Vec<u8>,
+    pub wrapped_dek_len: Vec<u8>,
+    pub wrapped_dek_ct: Vec<u8>,
+}
+
 bitflags! {
+    #[non_exhaustive]
     pub struct Flags: u8 {
         const ACTIVE = 1 << 0;   // 0b00000001
         const RETIRED = 1 << 1;  // 0b00000010
         const TOFU = 1 << 2;     // 0b00000100
         // TODO: Explicitly reserve bits 3-7 for future use
     }
-}
-
-struct Wrap {
-    slot_id: u8,
-    source_kind: u8, // 0x01 = Passpharse, 0x02 = DeviceOsKey
-    locator_id: u8,
-    wrap_nonce: Vec<u8>,
-    wrapped_dek_len: Vec<u8>,
-    wrapped_dek_ct: Vec<u8>,
 }
 
 impl Flags {
@@ -179,5 +165,87 @@ impl Flags {
     /// Check if the pin record is in a valid state (not both active and retired)
     pub fn is_valid(&self) -> bool {
         !(self.contains(Flags::ACTIVE) && self.contains(Flags::RETIRED))
+    }
+}
+
+pub struct PasswordFileHeader {
+    pub version: u8,
+    pub aead_alg: AeadAlgorithm,
+    pub seq: u64,
+    pub vault_id: [u8; 16],
+    pub nonce: [u8; 12],
+    pub kdf_params: Option<KdfParams>,
+    pub flags: Flags,
+    pub kek_locators: Vec<KekLocator>,
+    pub wraps: Vec<Wrap>,
+}
+
+impl PasswordFileHeader {
+    pub const fn builder(
+        version: u8,
+        aead_alg: AeadAlgorithm,
+        seq: u64,
+        vault_id: [u8; 16],
+        nonce: [u8; 12],
+    ) -> HeaderBuilder {
+        HeaderBuilder {
+            version,
+            aead_alg,
+            seq,
+            vault_id,
+            nonce,
+            kdf_params: None,
+            flags: Flags::empty(),
+            kek_locators: Vec::new(),
+            wraps: Vec::new(),
+        }
+    }
+}
+
+pub struct HeaderBuilder {
+    version: u8,
+    aead_alg: AeadAlgorithm,
+    seq: u64,
+    vault_id: [u8; 16],
+    nonce: [u8; 12],
+    kdf_params: Option<KdfParams>,
+    flags: Flags,
+    kek_locators: Vec<KekLocator>,
+    wraps: Vec<Wrap>,
+}
+
+impl HeaderBuilder {
+    pub fn kdf_params(mut self, params: KdfParams) -> Self {
+        self.kdf_params = Some(params);
+        self
+    }
+
+    pub fn flags(mut self, flags: Flags) -> Self {
+        self.flags = flags;
+        self
+    }
+
+    pub fn add_kek_locator(mut self, locator: KekLocator) -> Self {
+        self.kek_locators.push(locator);
+        self
+    }
+
+    pub fn add_wrap(mut self, wrap: Wrap) -> Self {
+        self.wraps.push(wrap);
+        self
+    }
+
+    pub fn build(self) -> PasswordFileHeader {
+        PasswordFileHeader {
+            version: self.version,
+            aead_alg: self.aead_alg,
+            seq: self.seq,
+            vault_id: self.vault_id,
+            nonce: self.nonce,
+            kdf_params: self.kdf_params,
+            flags: self.flags,
+            kek_locators: self.kek_locators,
+            wraps: self.wraps,
+        }
     }
 }
