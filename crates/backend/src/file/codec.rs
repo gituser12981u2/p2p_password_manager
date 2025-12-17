@@ -1,10 +1,15 @@
 use std::io::Write;
 
 use crate::{
-    codec::{TlvDecode, TlvEncode},
-    file::types::{Flags, KdfParams, PasswordFileHeader, Wrap},
-    pinset::types::Result,
+    codec::{TlvDecode, TlvEncode, write_tlv},
+    file::types::{Flags, KdfParams, MAGIC, PasswordFileHeader, Wrap},
+    pinset::types::{Result, PinsetError},
 };
+
+
+const TLV_KEK_LOCATOR: u8 = 0x01;
+const TLV_WRAP: u8 = 0x02;
+const TLV_END: u8 = 0x7F;
 
 impl TlvEncode for KdfParams {
     fn encode_to<W: Write>(&self, mut w: W) -> Result<()> {
@@ -22,18 +27,29 @@ impl TlvEncode for KdfParams {
 impl TlvDecode for KdfParams {
     fn decode_from<R: std::io::Read>(mut r: R) -> crate::pinset::types::Result<Self> {
         let mut id = [0u8; 1];
+        let mut salt = [0u8; 16];
+        let mut slot_id = [0u8; 1];
+        let mut memory_cost_kib = [0u8; 4];  
+        let mut time_cost = [0u8; 4];  
+        let mut parallelism = [0u8; 4];  
+        let mut reserved = [0u8; 2];  
 
         r.read_exact(&mut id)?;
-        // TODO: implement reading of the slot_id, salt, memory_cost_kib, time_cost, and parallelism
+        r.read_exact(&mut salt)?;
+        r.read_exact(&mut slot_id)?;
+        r.read_exact(&mut memory_cost_kib)?;
+        r.read_exact(&mut time_cost)?;
+        r.read_exact(&mut parallelism)?;
+        r.read_exact(&mut reserved)?;
 
         Ok(KdfParams {
             id: id[0],
-            slot_id: todo!(),
-            salt: todo!(),
-            memory_cost_kib: todo!(),
-            time_cost: todo!(),
-            parallelism: todo!(),
-            reserved: todo!(),
+            slot_id: slot_id[0],
+            salt,
+            memory_cost_kib: u32::from_be_bytes(memory_cost_kib),
+            time_cost: u32::from_be_bytes(time_cost),
+            parallelism: u32::from_be_bytes(parallelism),
+            reserved: u16::from_be_bytes(reserved),
         })
     }
 }
@@ -50,8 +66,8 @@ impl TlvEncode for Wrap {
 
         // wrap_nonce (N bytes; N depends on aead_alg and is inferred from length)
         w.write_all(&self.wrap_nonce)?;
-
-        // TODO Write wrapped_dek_len and wrapped_dek_ct
+        w.write_all(&self.wrapped_dek_len)?;
+        w.write_all(&self.wrapped_dek_ct)?;
 
         Ok(())
     }
@@ -69,14 +85,32 @@ pub fn encode_header<W: Write>(
     flags: Flags,
     wraps: &[Wrap],
 ) -> Result<()> {
-    todo!()
 
-    // TODO Write the MAGIC
-    // TODO Write the header fields (version, aead_alg, seq, vault_id, and nonce)
+    w.write_all(&MAGIC)?;
+    w.write_all(&header.version.to_be_bytes())?;
+    w.write_all(&[header.aead_alg as u8])?;
+    w.write_all(&header.seq.to_be_bytes())?;
+    w.write_all(&header.vault_id)?;
+    w.write_all(&header.nonce)?;
 
-    // TODO Write the kdf params
+    if let Some(params) = header.kdf_params {
+        w.write_all(&[params.id])?;
+        w.write_all(&[params.slot_id])?;
+        w.write_all(&params.salt)?;
+        w.write_all(&[params.time_cost as u8])?;
+        w.write_all(&[params.memory_cost_kib as u8])?;
+        w.write_all(&[params.parallelism as u8])?;
+        w.write_all(&[params.reserved as u8])?;
+    } 
 
-    // TODO Write the flags
+    w.write_all(
+        &[flags.bits()]
+    )?;
+
+    if let Some(kek) = header.kek_locators {
+        write_tlv(w, TLV_KEK_LOCATOR, kek);
+    }
+
 
     // TODO Write the TLVs
     // TLVs
