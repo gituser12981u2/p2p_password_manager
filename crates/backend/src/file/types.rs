@@ -130,7 +130,6 @@ pub struct Wrap {
     pub source_kind: u8, // 0x01 = Passpharse, 0x02 = DeviceOsKey
     pub locator_id: u8,
     pub wrap_nonce: Vec<u8>,
-    pub wrapped_dek_len: Vec<u8>,
     pub wrapped_dek_ct: Vec<u8>,
 }
 

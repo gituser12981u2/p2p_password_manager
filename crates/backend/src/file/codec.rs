@@ -3,9 +3,8 @@ use std::io::Write;
 use crate::{
     codec::{TlvDecode, TlvEncode, write_tlv},
     file::types::{Flags, KdfParams, MAGIC, PasswordFileHeader, Wrap},
-    pinset::types::{Result, PinsetError},
+    pinset::types::{PinsetError, Result},
 };
-
 
 const TLV_KEK_LOCATOR: u8 = 0x01;
 const TLV_WRAP: u8 = 0x02;
@@ -29,10 +28,10 @@ impl TlvDecode for KdfParams {
         let mut id = [0u8; 1];
         let mut salt = [0u8; 16];
         let mut slot_id = [0u8; 1];
-        let mut memory_cost_kib = [0u8; 4];  
-        let mut time_cost = [0u8; 4];  
-        let mut parallelism = [0u8; 4];  
-        let mut reserved = [0u8; 2];  
+        let mut memory_cost_kib = [0u8; 4];
+        let mut time_cost = [0u8; 4];
+        let mut parallelism = [0u8; 4];
+        let mut reserved = [0u8; 2];
 
         r.read_exact(&mut id)?;
         r.read_exact(&mut salt)?;
@@ -65,10 +64,13 @@ impl TlvEncode for Wrap {
         }
 
         // wrap_nonce (N bytes; N depends on aead_alg and is inferred from length)
+        if self.wrap_nonce.len() != 12 {
+            return Err(PinsetError::Invalid("wrap_nonce must be 12 bytes for AES-GCM"));
+        }
         w.write_all(&self.wrap_nonce)?;
-        w.write_all(&self.wrapped_dek_len)?;
-        w.write_all(&self.wrapped_dek_ct)?;
 
+        // TODO: find ct_len and w.write_all(&ct_len.to_be_bytes())?;
+        w.write_all(&self.wrapped_dek_ct)?;
         Ok(())
     }
 }
@@ -85,7 +87,6 @@ pub fn encode_header<W: Write>(
     flags: Flags,
     wraps: &[Wrap],
 ) -> Result<()> {
-
     w.write_all(&MAGIC)?;
     w.write_all(&header.version.to_be_bytes())?;
     w.write_all(&[header.aead_alg as u8])?;
@@ -94,23 +95,26 @@ pub fn encode_header<W: Write>(
     w.write_all(&header.nonce)?;
 
     if let Some(params) = header.kdf_params {
+
+        // Why do all this instead of just params.encode_to(&mut w)?;
         w.write_all(&[params.id])?;
         w.write_all(&[params.slot_id])?;
         w.write_all(&params.salt)?;
+
         w.write_all(&[params.time_cost as u8])?;
         w.write_all(&[params.memory_cost_kib as u8])?;
         w.write_all(&[params.parallelism as u8])?;
         w.write_all(&[params.reserved as u8])?;
-    } 
+    }
+    // Also error validation with PinsetError::Invalid plz
 
-    w.write_all(
-        &[flags.bits()]
-    )?;
+    w.write_all(&[flags.bits()])?;
 
     if let Some(kek) = header.kek_locators {
         write_tlv(w, TLV_KEK_LOCATOR, kek);
     }
 
+    todo!();
 
     // TODO Write the TLVs
     // TLVs
