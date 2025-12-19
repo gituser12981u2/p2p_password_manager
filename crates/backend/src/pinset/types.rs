@@ -70,7 +70,6 @@
 use crate::pinset::codec::{PinsetBody, TlvDecode, TlvEncode};
 use bitflags::bitflags;
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::io::{Read, Write};
 use zeroize::Zeroizing; // We do not need serde for TLV. We need to hand roll our encoding and decoding, unless you want to keep it for debugging purposes
@@ -123,7 +122,7 @@ pub enum PinsetError {
 /// This is written to disk as a `u8` discriminant (see `codec.rs` mapping).
 #[repr(u8)]
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyType {
     /// Ed25519 public key bytes.
     Ed25519 = 1,
@@ -138,7 +137,7 @@ pub enum KeyType {
 /// This is written to disk as a `u8` discriminant(see `codec.rs` mapping).
 #[repr(u8)]
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AeadAlgorithm {
     /// AES-256-GC with a 96-bit (12-byte) nonce.
     AesGcm = 1, 
@@ -158,7 +157,7 @@ impl AeadAlgorithm {
 /// This is written to disk as a `u8` discriminant (see `codec.rs` mapping).
 #[repr(u8)]
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeySource {
     /// KEK is stored in an OS credential manager / keystore.
     OsKeyStore = 1, 
@@ -175,7 +174,7 @@ bitflags! {
     /// - `ACTIVE` and `RETIRED` must not be se simultaneously.
     /// - Upper bits are reserved for future versions and should be rejected 
     ///   according to policy (current codec rejected invalid bit patterns via `from_bits`).
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct PinsetFlags: u8 {
         /// Record is currently valid for pin checks.
         const ACTIVE = 0b0000_0001;
@@ -231,7 +230,7 @@ impl PinsetFlags {
 /// Callers must enforce a coherent header:
 /// - For `KeySource::PassphraseKdf`, a `kdf` TLV must be present.
 /// - For `KeySource::OsKeyStore`, a `kek_locator` TLV may be present.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PinsetHeader {
     /// File format version (PSET v1 = 1).
     pub version: u8,
@@ -435,7 +434,7 @@ pub(crate) fn decode_body(bytes: &[u8]) -> Result<Vec<PinsetRecord>> {
 ///    stored as bytes. It is kept in the zeroizing container because it is security-relevant.
 /// - `added_at` / `expires-at` are UTC timestamps (seconds precision in the current codec).
 /// - `flags` carries record state such as active/retired/tofu.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct PinsetRecord {
     /// 32-byte peer identifier.
     pub peer_id: [u8; 32],

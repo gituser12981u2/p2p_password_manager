@@ -80,7 +80,6 @@ use crate::pinset::{
 use blake3::Hasher;
 use chrono::{DateTime, Utc};
 use rand::{RngCore, rngs::OsRng};
-use serde::{Deserialize, Serialize};
 use std::{
     ffi::OsString,
     fs::File,
@@ -150,7 +149,7 @@ pub enum PinsetStoreError {
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct PinsetStore {
     /// Filesystem location of the underlying store file.
     path: PathBuf,
